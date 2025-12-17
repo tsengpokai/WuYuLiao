@@ -1,114 +1,115 @@
 :root {
-    --bg-dark: #050505;
-    --neon-blue: #00f3ff;
-    --neon-green: #0aff0a;
-    --neon-red: #ff2a2a;
-    --neon-yellow: #fce83a;
+    --bg-main: #0a0b10;
+    --bg-card: #14161f;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --accent-blue: #3a86ff;
+    --accent-green: #0aff0a;
+    --accent-red: #ff0055;
+    --border-color: #2d3436;
 }
 
 body {
-    background-color: var(--bg-dark);
-    color: #e0e0e0;
-    font-family: 'Share Tech Mono', monospace;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Noto Sans TC', sans-serif;
     margin: 0;
-    height: 100vh;
-    overflow: hidden;
+    padding: 0;
+    line-height: 1.6;
 }
 
-/* 掃描線 */
-.scanline {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 50%);
-    background-size: 100% 4px;
-    pointer-events: none; z-index: 999;
+nav {
+    background: rgba(20, 22, 31, 0.95);
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
 }
 
-.container { display: grid; grid-template-columns: 300px 1fr; height: 100%; }
+.logo { font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; }
+.subtitle { font-weight: 300; font-size: 0.8rem; color: var(--accent-blue); margin-left: 10px; }
 
-/* Sidebar */
-.sidebar { background: #000; border-right: 1px solid #333; padding: 20px; display: flex; flex-direction: column; z-index: 10; }
-.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-.brand-logo { width: 40px; }
-.logo-text { font-size: 1.8em; margin: 0; color: #fff; text-shadow: 0 0 10px var(--neon-blue); }
-.logo-text span { color: var(--neon-blue); }
-.version { font-size: 0.6em; color: var(--neon-red); letter-spacing: 2px; }
+nav ul { list-style: none; display: flex; gap: 30px; margin: 0; padding: 0; }
+nav a { text-decoration: none; color: var(--text-main); font-size: 0.9rem; transition: 0.3s; }
+nav a:hover { color: var(--accent-blue); }
 
-.cyber-btn {
-    background: rgba(255, 42, 42, 0.1);
-    border: 1px solid var(--neon-red);
-    color: var(--neon-red);
-    padding: 15px; width: 100%; font-size: 1.1em;
-    cursor: pointer; transition: 0.3s;
-    font-family: inherit; font-weight: bold;
-}
-.cyber-btn:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 20px var(--neon-red); }
-.cyber-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
 
-.event-feed { border: 1px solid #333; background: #0a0a0a; padding: 10px; margin-top: 20px; font-size: 0.8em; }
-.feed-header { color: var(--neon-blue); border-bottom: 1px solid #333; margin-bottom: 5px; }
-.feed-row { display: flex; justify-content: space-between; margin-bottom: 3px; }
+/* Hero Section */
+.hero { text-align: center; margin-bottom: 60px; padding: 40px 0; border-bottom: 1px solid var(--border-color); }
+.hero h1 { font-size: 3rem; margin-bottom: 10px; background: linear-gradient(to right, #fff, #a0a0a0); -webkit-background-clip: text; color: transparent; }
+.hero p { color: var(--accent-blue); font-size: 1.2rem; margin-top: 0; }
+.hero small { color: var(--text-muted); display: block; margin-top: 20px; }
 
-.console-box { margin-top: auto; height: 150px; background: #000; border-top: 1px solid #333; overflow-y: auto; padding: 10px; color: #666; font-size: 0.7em; }
+/* Cards */
+.card { background: var(--bg-card); border-radius: 12px; padding: 30px; margin-bottom: 40px; border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
-/* Main Dashboard */
-.dashboard { display: grid; grid-template-rows: 40% 60%; height: 100%; }
+.section-title { margin-bottom: 30px; border-left: 4px solid var(--accent-blue); padding-left: 15px; }
+.section-title h2 { margin: 0; font-size: 1.8rem; }
+.section-title p { color: var(--text-muted); margin: 5px 0 0; }
 
-/* Waveforms */
-.waveforms-container { background: #0b0c10; padding: 10px; display: flex; flex-direction: column; border-bottom: 1px solid var(--neon-blue); }
-.panel-header { font-size: 0.8em; color: var(--neon-blue); margin-bottom: 5px; }
+/* Grid Layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.content-text ul { padding-left: 20px; color: #ccc; }
+.content-text li { margin-bottom: 10px; }
+.highlight { color: var(--accent-green); font-weight: bold; }
 
-.wave-row { flex: 1; display: flex; align-items: center; border-bottom: 1px solid #222; position: relative; }
-.station-badge {
-    width: 60px; font-size: 0.9em; text-align: center; color: #555; border: 1px solid #333; padding: 5px; margin-right: 10px; transition: 0.3s;
-}
-/* 當測站被觸發時的樣式 */
-.station-active {
-    background: var(--neon-green); color: #000; border-color: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); font-weight: bold;
+.code-box {
+    background: #000;
+    border-left: 3px solid var(--accent-green);
+    padding: 15px;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-top: 15px;
 }
 
-canvas { width: 100%; height: 100%; }
+.interactive-box { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; text-align: center; }
+.chart-container-sm { height: 200px; width: 100%; margin: 20px 0; }
 
-/* Map Section */
-.map-section { position: relative; border-top: 2px solid var(--neon-blue); }
+.action-btn {
+    background: var(--accent-blue); color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.2s;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+.action-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(58, 134, 255, 0.4); }
+.action-btn.danger { background: var(--accent-red); }
+.action-btn.danger:hover { box-shadow: 0 5px 15px rgba(255, 0, 85, 0.4); }
+
+.pred-result { font-family: 'Roboto Mono', monospace; font-size: 1.2rem; margin: 10px 0; font-weight: bold; min-height: 1.5em; }
+
+.note { text-align: left; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid #333; margin-top: 15px; padding-top: 15px; }
+
+/* Modules Grid */
+.modules-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.module-card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 8px; position: relative; border: 1px solid transparent; transition: 0.3s; }
+.module-card:hover { border-color: var(--accent-blue); transform: translateY(-5px); }
+.step-num { font-size: 0.7rem; letter-spacing: 2px; color: var(--accent-blue); margin-bottom: 10px; font-weight: bold; }
+.module-card h3 { margin: 0 0 10px; font-size: 1.1rem; }
+.model-tag { display: inline-block; background: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; color: var(--accent-green); margin-bottom: 10px; font-family: 'Roboto Mono', monospace; }
+.module-card p { font-size: 0.85rem; color: #aaa; margin-bottom: 5px; }
+
+/* Simulation Section */
+.control-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #000; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+.status-panel { display: flex; gap: 20px; font-family: 'Roboto Mono', monospace; font-size: 0.9rem; }
+
+.simulation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 500px; }
+.waves-col { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+.wave-box { flex: 1; background: #000; border: 1px solid #333; position: relative; border-radius: 4px; padding: 5px; }
+.st-label { position: absolute; top: 5px; left: 10px; font-size: 0.7rem; color: #888; font-family: 'Roboto Mono', monospace; }
+.wave-box canvas { width: 100%; height: 100%; }
+
+.map-col { height: 100%; border: 1px solid var(--accent-blue); border-radius: 4px; overflow: hidden; }
 #map { width: 100%; height: 100%; background: #000; }
 
-.map-hud {
-    position: absolute; bottom: 20px; right: 20px; z-index: 500;
-    background: rgba(0, 0, 0, 0.8); border: 1px solid var(--neon-red);
-    padding: 15px; width: 200px;
-    box-shadow: 0 0 20px rgba(255, 42, 42, 0.2);
-    display: none; /* 初始隱藏 */
-}
-.map-hud h3 { margin: 0 0 10px 0; color: var(--neon-red); font-size: 1em; border-bottom: 1px solid #555; }
-.hud-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8em; color: #fff; }
-.hud-mag { font-size: 1.5em; color: var(--neon-yellow); }
-
-/* Leaflet Custom Animations */
-
-/* 震央閃爍 */
-.epicenter-pulse {
-    animation: epi-pulse 1s infinite;
-}
-@keyframes epi-pulse {
-    0% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.2); }
-    100% { opacity: 1; transform: scale(1); }
-}
-
-/* 測站標記 */
-.station-icon-normal { filter: grayscale(100%) opacity(0.5); transition: 0.3s; }
-.station-icon-triggered { filter: grayscale(0%) opacity(1) drop-shadow(0 0 5px #0aff0a); transform: scale(1.3); }
-
-/* P波圓圈樣式 (SVG class) */
-.p-wave-circle {
-    stroke: var(--neon-blue);
-    stroke-width: 2;
-    fill: rgba(0, 243, 255, 0.1);
-    stroke-dasharray: 5, 5;
-}
-/* S波圓圈樣式 */
-.s-wave-circle {
-    stroke: var(--neon-red);
-    stroke-width: 3;
-    fill: rgba(255, 42, 42, 0.1);
+/* RWD */
+@media (max-width: 900px) {
+    .grid-2, .modules-grid, .simulation-grid { grid-template-columns: 1fr; }
+    .simulation-grid { height: auto; }
+    .waves-col { height: 400px; }
+    .map-col { height: 300px; }
 }
