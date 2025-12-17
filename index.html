@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEISYNC | Multi-Station Network</title>
+    <title>SEISYNC | Cinematic Monitor</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -12,112 +12,79 @@
 </head>
 <body>
     <div class="scanline"></div>
-    <div class="crt-flicker"></div>
-
+    
     <div class="container">
         <aside class="sidebar">
             <div class="brand">
                 <img src="assets/logo.svg" alt="Logo" class="brand-logo pulse">
                 <div>
                     <h1 class="logo-text">SEI<span>SYNC</span></h1>
-                    <div class="version">V3.0 NETWORK</div>
+                    <div class="version">V4.0 CINEMATIC</div>
                 </div>
             </div>
             
             <div class="status-indicator">
-                <span class="dot"></span> STATUS: <span style="color:#66fcf1">MONITORING</span>
+                <span class="dot"></span> SYSTEM: <span style="color:#66fcf1">ARMED</span>
             </div>
 
             <div class="control-panel">
                 <div class="step-group">
-                    <span class="step-label">01 ACQUISITION</span>
-                    <button id="btn-load" class="cyber-btn">TRIGGER NETWORK</button>
+                    <span class="step-label">SEQUENCE CONTROL</span>
+                    <button id="btn-simulate" class="cyber-btn">INITIATE EARTHQUAKE</button>
                 </div>
-                <div class="step-group">
-                    <span class="step-label">02 INFERENCE</span>
-                    <button id="btn-pick" class="cyber-btn" disabled>RED-PAN PICKING</button>
+            </div>
+
+            <div class="event-feed">
+                <div class="feed-header">EVENT PARAMETERS</div>
+                <div class="feed-row">
+                    <span>STATUS</span>
+                    <span id="feed-status" style="color:#555">IDLE</span>
                 </div>
-                <div class="step-group">
-                    <span class="step-label">03 LOCALIZATION</span>
-                    <button id="btn-locate" class="cyber-btn" disabled>ASSOCIATE & LOCATE</button>
+                <div class="feed-row">
+                    <span>P-WAVE RAD</span>
+                    <span id="feed-p-rad">0 km</span>
+                </div>
+                <div class="feed-row">
+                    <span>S-WAVE RAD</span>
+                    <span id="feed-s-rad">0 km</span>
                 </div>
             </div>
 
             <div class="console-box">
-                <div class="console-header">SYSTEM LOG</div>
                 <div id="log-output" class="console-content">
-                    <div>> System boot sequence initiated...</div>
-                    <div>> 3 stations connected.</div>
-                    <div>> Waiting for trigger...</div>
+                    <div>> System ready.</div>
+                    <div>> Map overlay initialized.</div>
+                    <div>> Awaiting event trigger...</div>
                 </div>
             </div>
         </aside>
 
         <main class="dashboard">
             <section class="waveforms-container">
-                <div class="panel-header">
-                    <span>REAL-TIME TELEMETRY (Z-Component)</span>
-                    <span class="live-tag">● LIVE</span>
-                </div>
+                <div class="panel-header">SEISMIC NETWORK TELEMETRY</div>
                 
                 <div class="wave-row">
-                    <div class="station-info">
-                        <div class="st-code">TW.HUAL</div>
-                        <div class="st-dist">Dist: 25km</div>
-                    </div>
-                    <div class="canvas-wrapper">
-                        <canvas id="chart-0"></canvas>
-                        <div class="scanning-bar"></div>
-                    </div>
+                    <div class="station-badge" id="badge-0">HUAL</div>
+                    <canvas id="chart-0"></canvas>
                 </div>
-                
                 <div class="wave-row">
-                    <div class="station-info">
-                        <div class="st-code">TW.NACB</div>
-                        <div class="st-dist">Dist: 68km</div>
-                    </div>
-                    <div class="canvas-wrapper">
-                        <canvas id="chart-1"></canvas>
-                        <div class="scanning-bar" style="animation-delay: 0.1s"></div>
-                    </div>
+                    <div class="station-badge" id="badge-1">NACB</div>
+                    <canvas id="chart-1"></canvas>
                 </div>
-
                 <div class="wave-row">
-                    <div class="station-info">
-                        <div class="st-code">TW.SSLB</div>
-                        <div class="st-dist">Dist: 85km</div>
-                    </div>
-                    <div class="canvas-wrapper">
-                        <canvas id="chart-2"></canvas>
-                        <div class="scanning-bar" style="animation-delay: 0.2s"></div>
-                    </div>
+                    <div class="station-badge" id="badge-2">SSLB</div>
+                    <canvas id="chart-2"></canvas>
                 </div>
             </section>
 
-            <section class="bottom-grid">
-                <div class="map-box">
-                    <div id="map"></div>
-                    <div class="map-overlay">TRIANGULATION MODE</div>
-                </div>
-                <div class="data-box">
-                    <h2>EVENT SOLUTION</h2>
-                    <div class="data-grid">
-                        <div class="d-item">
-                            <span class="label">ORIGIN TIME</span>
-                            <span class="val" id="val-time">--:--:--</span>
-                        </div>
-                        <div class="d-item">
-                            <span class="label">DEPTH</span>
-                            <span class="val" id="val-depth">-- km</span>
-                        </div>
-                        <div class="d-item full-width">
-                            <span class="label">EPICENTER</span>
-                            <span class="val" id="val-loc">Waiting...</span>
-                        </div>
-                        <div class="d-item full-width big-stat">
-                            <span class="label">MAGNITUDE</span>
-                            <span class="val huge" id="val-mag">M --</span>
-                        </div>
+            <section class="map-section">
+                <div id="map"></div>
+                <div class="map-hud">
+                    <h3>ESTIMATED EPICENTER</h3>
+                    <div class="hud-grid">
+                        <div><small>MAG</small><br><strong class="hud-mag">5.9</strong></div>
+                        <div><small>DEPTH</small><br><strong>12km</strong></div>
+                        <div><small>LOC</small><br><strong>OFFSHORE</strong></div>
                     </div>
                 </div>
             </section>

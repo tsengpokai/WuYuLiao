@@ -1,188 +1,223 @@
-// --- 參數設定 ---
-const DURATION = 30; // 秒
-const RATE = 50;     // Hz
-const TOTAL_POINTS = DURATION * RATE;
+// --- 物理常數 ---
+const P_WAVE_VELOCITY = 6.0; // km/s (稍微調慢一點以便視覺觀察)
+const S_WAVE_VELOCITY = 3.5; // km/s
+const TIME_SCALE = 2.0;      // 時間加速倍率 (1秒模擬 = X秒真實)
 
-// --- 測站與物理資料 (由 stations.json 驅動) ---
-// 這裡我們直接寫入 JS 方便你測試，也可以讀取外部 json
-const stationsData = [
-    { code: "TW.HUAL", dist: 25, p_time: 4.5, s_time: 7.8, noise: 0.05, lat: 23.98, lon: 121.60 },
-    { code: "TW.NACB", dist: 68, p_time: 11.2, s_time: 19.5, noise: 0.08, lat: 24.45, lon: 121.75 },
-    { code: "TW.SSLB", dist: 85, p_time: 14.8, s_time: 25.2, noise: 0.06, lat: 23.90, lon: 120.95 }
+// --- 測站資料 (經緯度) ---
+// Hualien, Yilan, Nantou
+const stations = [
+    { id: 0, code: "TW.HUAL", lat: 23.98, lon: 121.60, triggered: false },
+    { id: 1, code: "TW.NACB", lat: 24.45, lon: 121.75, triggered: false },
+    { id: 2, code: "TW.SSLB", lat: 23.90, lon: 120.95, triggered: false }
 ];
 
-// --- 1. 初始化地圖 ---
-const map = L.map('map', {zoomControl: false}).setView([24.1, 121.4], 8);
+// 震央 (花蓮外海)
+const epicenter = { lat: 24.15, lon: 121.90 };
+
+// --- 初始化地圖 ---
+const map = L.map('map', {
+    zoomControl: false, 
+    attributionControl: false,
+    scrollWheelZoom: false,
+    doubleClickZoom: false
+}).setView([24.1, 121.6], 9);
+
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 10, opacity: 0.9
+    maxZoom: 12, opacity: 0.8
 }).addTo(map);
 
-// 標示測站
-const stationIcon = L.divIcon({
-    className: 'custom-icon',
-    html: '<svg width="20" height="20" viewBox="0 0 40 40"><polygon points="20,5 35,35 5,35" fill="#0aff0a" stroke="#fff" stroke-width="2"/></svg>',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-});
-const epiIcon = L.icon({
-    iconUrl: 'assets/marker.svg',
-    iconSize: [50, 50],
-    iconAnchor: [25, 25]
+// 建立測站 Marker (初始為灰色)
+const stationMarkers = [];
+const stationIconHtml = `<svg width="30" height="30" viewBox="0 0 40 40"><polygon points="20,5 35,35 5,35" fill="#0aff0a" stroke="#fff" stroke-width="2"/></svg>`;
+
+stations.forEach((st, index) => {
+    const icon = L.divIcon({
+        className: 'station-icon-normal', // CSS Class 控制顏色
+        html: stationIconHtml,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
+    const marker = L.marker([st.lat, st.lon], {icon: icon}).addTo(map);
+    stationMarkers[index] = marker; // 存起來之後改樣式
 });
 
-stationsData.forEach(st => {
-    L.marker([st.lat, st.lon], {icon: stationIcon}).addTo(map)
-     .bindTooltip(st.code, {permanent: true, direction: 'right', offset: [10,0], opacity: 0.7});
-});
-
-// --- 2. 初始化 Chart.js (3個圖表) ---
+// --- 初始化 Chart.js ---
 const charts = [];
-// 迴圈建立 chart-0, chart-1, chart-2
+const waveBuffers = [[], [], []]; // 每個測站的波形數據緩存
+
 for (let i = 0; i < 3; i++) {
     const ctx = document.getElementById(`chart-${i}`).getContext('2d');
     charts[i] = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: Array.from({length: TOTAL_POINTS}, (_, k) => k),
+            labels: Array.from({length: 200}, (_,k)=>k), // 固定視窗寬度
             datasets: [{
-                data: [], 
-                borderColor: '#66fcf1',
-                borderWidth: 1.5,
+                data: Array(200).fill(0), // 初始全平
+                borderColor: '#444', // 未觸發時顏色暗淡
+                borderWidth: 1,
                 pointRadius: 0,
-                tension: 0.3
+                tension: 0.4
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: false, // 關閉動畫以提高效能
-            scales: {
-                x: { display: false, min: 0, max: TOTAL_POINTS },
-                y: { display: false, min: -1.5, max: 1.5 }
-            },
-            plugins: { legend: { display: false } }
+            responsive: true, maintainAspectRatio: false, animation: false,
+            scales: { x: {display: false}, y: {display: false, min: -2, max: 2} },
+            plugins: { legend: {display: false} }
         }
     });
 }
 
-// --- 3. 物理波形產生器 ---
-function generateWaveform(st) {
-    const data = [];
-    for (let i = 0; i < TOTAL_POINTS; i++) {
-        const t = i / RATE; // 當前時間(秒)
-        let amp = (Math.random() - 0.5) * st.noise; // 背景雜訊
-
-        // P波到達
-        if (t >= st.p_time) {
-            let dt = t - st.p_time;
-            // 模擬 P 波初動
-            amp += Math.sin(2 * Math.PI * 6 * dt) * Math.exp(-dt*0.8) * 0.4;
-        }
-
-        // S波到達 (振幅更大)
-        if (t >= st.s_time) {
-            let dt = t - st.s_time;
-            // 模擬 S 波劇烈晃動
-            amp += Math.sin(2 * Math.PI * 3 * dt) * Math.exp(-dt*0.3) * 1.0;
-        }
-        
-        // 截斷過大數值
-        if(amp > 1.5) amp = 1.5;
-        if(amp < -1.5) amp = -1.5;
-
-        data.push(amp);
+// --- 輔助：物理波形生成器 ---
+function getSeismicValue(timeSinceTrigger, distance) {
+    // 簡單的合成波：S波到達後振幅變大
+    const pTime = distance / P_WAVE_VELOCITY;
+    const sTime = distance / S_WAVE_VELOCITY;
+    
+    let amp = (Math.random()-0.5) * 0.1; // 背景雜訊
+    
+    if (timeSinceTrigger > pTime) {
+        // P波段
+        amp += Math.sin((timeSinceTrigger-pTime)*15) * 0.5 * Math.exp(-(timeSinceTrigger-pTime)*0.5);
     }
-    return data;
+    if (timeSinceTrigger > sTime) {
+        // S波段 (大振幅)
+        amp += Math.sin((timeSinceTrigger-sTime)*8) * 1.5 * Math.exp(-(timeSinceTrigger-sTime)*0.2);
+    }
+    return amp;
 }
 
-// 預先生成波形數據
-const waveforms = stationsData.map(st => generateWaveform(st));
+// --- 核心：動畫控制變數 ---
+let simulationTime = 0;
+let isRunning = false;
+let pWaveCircle = null;
+let sWaveCircle = null;
+let epicenterMarker = null;
+let animationFrameId = null;
+const startTime = Date.now();
 
-// --- 介面互動邏輯 ---
-const btnLoad = document.getElementById('btn-load');
-const btnPick = document.getElementById('btn-pick');
-const btnLocate = document.getElementById('btn-locate');
+// --- 介面元素 ---
+const btnSimulate = document.getElementById('btn-simulate');
 const logBox = document.getElementById('log-output');
+const feedStatus = document.getElementById('feed-status');
 
-function log(msg, color='#fff') {
-    logBox.innerHTML += `<div style="color:${color}">> ${msg}</div>`;
+function log(msg) {
+    logBox.innerHTML += `<div>> ${msg}</div>`;
     logBox.scrollTop = logBox.scrollHeight;
 }
 
-// Step 1: 觸發波形
-btnLoad.addEventListener('click', () => {
-    btnLoad.disabled = true;
-    log("Triggering network acquisition...", "#00f3ff");
+// --- 開始模擬 ---
+btnSimulate.addEventListener('click', () => {
+    if(isRunning) return;
+    isRunning = true;
+    btnSimulate.disabled = true;
     
-    // 啟動掃描線動畫
-    document.querySelectorAll('.scanning-bar').forEach(bar => bar.classList.add('scanning-active'));
+    log("EARTHQUAKE DETECTED!", "#ff2a2a");
+    feedStatus.innerHTML = "<span style='color:#ff2a2a; animation:blink 0.5s infinite'>CRITICAL</span>";
+    document.querySelector('.map-hud').style.display = 'block';
 
-    let currentIndex = 0;
-    // 使用 setInterval 模擬資料流進入
-    const timer = setInterval(() => {
-        if (currentIndex >= TOTAL_POINTS) {
-            clearInterval(timer);
-            log("Data buffer full. Ready for AI.", "#0aff0a");
-            btnPick.disabled = false;
-            return;
-        }
+    // 1. 繪製震央 (Star)
+    const starIcon = L.divIcon({
+        className: 'epicenter-pulse',
+        html: '<svg width="50" height="50" viewBox="0 0 50 50"><path d="M25 2 L32 18 L50 18 L36 29 L41 46 L25 36 L9 46 L14 29 L0 18 L18 18 Z" fill="#ff2a2a" stroke="#fff" stroke-width="2"/></svg>',
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
+    });
+    epicenterMarker = L.marker([epicenter.lat, epicenter.lon], {icon: starIcon}).addTo(map);
 
-        // 同時更新三個圖表
-        for (let i = 0; i < 3; i++) {
-            // 每次塞入 10 個點 (加速顯示)
-            const chunk = waveforms[i].slice(0, currentIndex);
-            charts[i].data.datasets[0].data = chunk;
-            charts[i].update('none'); // 'none' mode 極大提升效能
-        }
-        currentIndex += 10;
-    }, 20);
-});
+    // 2. 初始化波前圓圈 (半徑 0)
+    // P波 (藍色/綠色, 快)
+    pWaveCircle = L.circle([epicenter.lat, epicenter.lon], {
+        radius: 0,
+        className: 'p-wave-circle', // 用 CSS 設定樣式
+        color: '#00f3ff', fillColor: '#00f3ff', fillOpacity: 0.1, weight: 1
+    }).addTo(map);
 
-// Step 2: AI 拾取
-btnPick.addEventListener('click', () => {
-    btnPick.disabled = true;
-    log("Running RED-PAN inference on GPU...", "#ff2a2a");
+    // S波 (紅色, 慢, 破壞力強)
+    sWaveCircle = L.circle([epicenter.lat, epicenter.lon], {
+        radius: 0,
+        className: 's-wave-circle',
+        color: '#ff2a2a', fillColor: '#ff2a2a', fillOpacity: 0.2, weight: 2
+    }).addTo(map);
 
-    setTimeout(() => {
-        // 模擬三個測站分別抓到 P/S 波
-        stationsData.forEach((st, i) => {
-            log(`[${st.code}] P:${st.p_time}s / S:${st.s_time}s (Conf: 0.98)`, "#0aff0a");
-            // 變色表示已選取
-            charts[i].data.datasets[0].borderColor = '#0aff0a'; 
-            charts[i].update();
+    // 3. 啟動 Game Loop
+    let lastTime = Date.now();
+    
+    function loop() {
+        const now = Date.now();
+        const dt = (now - lastTime) / 1000; // 經過秒數
+        lastTime = now;
+        simulationTime += dt * TIME_SCALE; // 加速模擬
+
+        // A. 更新圓圈半徑 (km -> meters)
+        const pRadiusKm = simulationTime * P_WAVE_VELOCITY;
+        const sRadiusKm = simulationTime * S_WAVE_VELOCITY;
+        
+        pWaveCircle.setRadius(pRadiusKm * 1000);
+        sWaveCircle.setRadius(sRadiusKm * 1000);
+
+        // 更新左側面板數值
+        document.getElementById('feed-p-rad').innerText = pRadiusKm.toFixed(1) + " km";
+        document.getElementById('feed-s-rad').innerText = sRadiusKm.toFixed(1) + " km";
+
+        // B. 碰撞檢測 (Collision Detection)
+        stations.forEach((st, idx) => {
+            // 計算震央到測站距離 (Leaflet 自帶 distance 方法，單位 meters)
+            const distMeters = map.distance([epicenter.lat, epicenter.lon], [st.lat, st.lon]);
+            
+            // 判斷 P 波是否到達
+            if (!st.triggered && (pRadiusKm * 1000) >= distMeters) {
+                st.triggered = true;
+                triggerStation(idx, st.code, distMeters/1000);
+            }
+
+            // 如果已觸發，持續更新波形圖
+            if (st.triggered) {
+                updateChart(idx, simulationTime, distMeters/1000);
+            }
         });
-        
-        btnLocate.disabled = false;
-    }, 1500);
+
+        // 停止條件 (譬如跑了 30秒)
+        if (simulationTime < 30) {
+            animationFrameId = requestAnimationFrame(loop);
+        } else {
+            log("Simulation sequence ended.");
+            btnSimulate.disabled = false;
+        }
+    }
+    
+    loop();
 });
 
-// Step 3: 定位
-btnLocate.addEventListener('click', () => {
-    btnLocate.disabled = true;
-    log("Calculating NonLinLoc solution...", "#00f3ff");
+// --- 當波前掃到測站時觸發 ---
+function triggerStation(index, code, distKm) {
+    log(`Wavefront hit ${code} (Dist: ${distKm.toFixed(1)}km)`);
+    
+    // 1. 改變地圖圖示 (變亮)
+    const marker = stationMarkers[index];
+    const el = marker.getElement();
+    if(el) {
+        el.classList.remove('station-icon-normal');
+        el.classList.add('station-icon-triggered'); // CSS 放大變亮
+    }
 
-    setTimeout(() => {
-        const epicenter = [24.05, 121.62]; // 花蓮外海
-        
-        // 1. 畫出三角測量線
-        stationsData.forEach(st => {
-            L.polyline([[st.lat, st.lon], epicenter], {
-                color: '#ff2a2a', dashArray: '5,5', weight: 1, opacity: 0.8
-            }).addTo(map);
-        });
+    // 2. 改變側邊欄 Badge
+    document.getElementById(`badge-${index}`).classList.add('station-active');
 
-        // 2. 顯示震央
-        L.marker(epicenter, {icon: epiIcon}).addTo(map)
-         .bindPopup("<b>EPICENTER</b><br>M 5.9").openPopup();
-        
-        map.flyTo(epicenter, 9, {duration: 1.5});
+    // 3. 改變圖表顏色 (變亮)
+    charts[index].data.datasets[0].borderColor = '#0aff0a'; // 變成螢光綠
+    charts[index].data.datasets[0].borderWidth = 2;
+}
 
-        // 3. 更新數據顯示
-        document.getElementById('val-time').innerText = "10:15:34.20";
-        document.getElementById('val-depth').innerText = "12.4 km";
-        document.getElementById('val-loc').innerText = "24.05°N, 121.62°E";
-        document.getElementById('val-mag').innerText = "M 5.9";
-
-        log("EVENT LOCATED: M5.9 Hualien Offshore", "#ff2a2a");
-    }, 1000);
-});
+// --- 更新圖表 (Shift Buffer) ---
+function updateChart(index, time, distKm) {
+    const chart = charts[index];
+    // 計算當前振幅
+    const amp = getSeismicValue(time, distKm);
+    
+    // 移除最舊的數據，加入新的
+    const data = chart.data.datasets[0].data;
+    data.shift();
+    data.push(amp);
+    
+    chart.update('none'); // 高效能更新
+}
