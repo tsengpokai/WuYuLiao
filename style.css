@@ -1,22 +1,35 @@
 :root {
-    --bg-color: #0b0c10;
-    --panel-color: #1f2833;
-    --border-color: #45a29e;
-    --accent-green: #66fcf1;
-    --accent-red: #ff4d4d;
-    --text-main: #c5c6c7;
-    --font-mono: 'Roboto Mono', monospace;
+    --bg-dark: #050505;
+    --panel-bg: rgba(20, 25, 30, 0.95);
+    --neon-blue: #00f3ff;
+    --neon-green: #0aff0a;
+    --neon-red: #ff2a2a;
+    --text-dim: #5c677d;
+    --grid-line: rgba(0, 243, 255, 0.05);
 }
 
-* { box-sizing: border-box; }
-
 body {
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    font-family: var(--font-mono);
+    background-color: var(--bg-dark);
+    /* 網格背景 */
+    background-image: 
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    color: #e0e0e0;
+    font-family: 'Share Tech Mono', monospace;
     margin: 0;
     height: 100vh;
     overflow: hidden;
+}
+
+/* 掃描線特效 */
+.scanline {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 999;
 }
 
 .container {
@@ -28,104 +41,109 @@ body {
 /* 側邊欄 */
 .sidebar {
     background: #000;
-    border-right: 1px solid var(--border-color);
-    padding: 25px;
+    border-right: 1px solid #333;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
     z-index: 10;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
 }
 
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand-logo { width: 40px; height: 40px; }
-.logo-text { color: var(--accent-green); margin: 0; letter-spacing: 2px; }
-.logo-text span { color: #fff; }
-.subtitle { font-size: 0.8em; color: #888; margin-top: -15px; }
-
-/* 按鈕樣式 */
-.step-group { margin-bottom: 15px; }
-.step-label { font-size: 0.7em; color: var(--border-color); display: block; margin-bottom: 5px; }
+.brand { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+.brand-logo { width: 45px; height: 45px; }
+.logo-text { font-size: 2em; margin: 0; color: #fff; text-shadow: 0 0 10px var(--neon-blue); line-height: 1; }
+.logo-text span { color: var(--neon-blue); }
+.version { font-size: 0.6em; color: var(--neon-green); letter-spacing: 3px; margin-top: 5px;}
 
 .cyber-btn {
+    background: rgba(0, 243, 255, 0.05);
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 15px;
     width: 100%;
-    background: rgba(69, 162, 158, 0.1);
-    border: 1px solid var(--border-color);
-    color: var(--accent-green);
-    padding: 12px;
-    font-family: var(--font-mono);
+    text-align: left;
+    font-family: inherit;
+    font-size: 1em;
     cursor: pointer;
-    transition: 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.cyber-btn:hover:not([disabled]) {
-    background: var(--accent-green);
-    color: #000;
-    box-shadow: 0 0 15px var(--accent-green);
-}
-
-.cyber-btn:disabled {
-    border-color: #333;
-    color: #555;
-    cursor: not-allowed;
-}
-
-/* Console Log */
-.status-box { flex-grow: 1; display: flex; flex-direction: column; margin-top: auto; }
-.console-log {
-    background: #000;
-    border: 1px solid #333;
-    padding: 10px;
-    height: 150px;
-    overflow-y: auto;
-    font-size: 0.75em;
-    color: #0f0;
-    font-family: 'Courier New', monospace;
-}
-
-/* 主要區域 */
-.dashboard {
-    padding: 20px;
-    display: grid;
-    grid-template-rows: 45% 1fr; /* 上下比例 */
-    gap: 20px;
-}
-
-.panel {
-    background: var(--panel-color);
-    border: 1px solid var(--border-color);
+    transition: 0.2s;
+    margin-bottom: 5px;
     position: relative;
-    border-radius: 4px;
 }
+.cyber-btn:hover:not([disabled]) { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+.cyber-btn:disabled { border-color: #333; color: #555; cursor: not-allowed; background: transparent; }
 
-.panel-header {
-    background: rgba(0,0,0,0.3);
-    padding: 8px 15px;
-    font-size: 0.8em;
-    border-bottom: 1px solid var(--border-color);
+.console-box { margin-top: auto; background: #000; border: 1px solid #333; height: 200px; display: flex; flex-direction: column; }
+.console-header { background: #222; padding: 5px 10px; font-size: 0.7em; color: #888; border-bottom: 1px solid #333;}
+.console-content { padding: 10px; overflow-y: auto; color: var(--neon-green); font-size: 0.8em; line-height: 1.5; font-family: 'Courier New', monospace; }
+
+/* Dashboard 區域 */
+.dashboard { padding: 20px; display: grid; grid-template-rows: 3fr 2fr; gap: 20px; height: 100%; }
+
+/* 波形圖區塊 */
+.waveforms-container {
+    background: var(--panel-bg);
+    border: 1px solid var(--text-dim);
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    padding: 2px;
 }
+.panel-header {
+    background: rgba(0,243,255,0.1);
+    padding: 8px 15px;
+    font-size: 0.9em;
+    color: var(--neon-blue);
+    display: flex; justify-content: space-between;
+    border-bottom: 1px solid var(--text-dim);
+}
+.live-tag { color: var(--neon-red); animation: blink 1s infinite; }
 
-.live-indicator { color: var(--accent-red); animation: blink 1s infinite; }
+.wave-row {
+    flex: 1; /* 三個圖表均分高度 */
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    position: relative;
+    overflow: hidden;
+}
+.wave-row:last-child { border-bottom: none; }
 
-.waveform-section { display: flex; flex-direction: column; }
-.chart-container { flex-grow: 1; position: relative; width: 100%; padding: 10px; }
+.station-info {
+    width: 100px;
+    padding: 0 10px;
+    border-right: 1px solid #333;
+    display: flex; flex-direction: column; justify-content: center;
+    background: rgba(0,0,0,0.3);
+    height: 100%;
+}
+.st-code { color: #fff; font-weight: bold; font-size: 1.1em; }
+.st-dist { color: #888; font-size: 0.8em; }
 
-.bottom-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.canvas-wrapper { flex-grow: 1; height: 100%; position: relative; }
 
-/* 地圖 */
-#map { height: 100%; width: 100%; z-index: 1; }
+/* 掃描線動畫 */
+.scanning-bar {
+    position: absolute; top: 0; left: 0; width: 2px; height: 100%;
+    background: var(--neon-red);
+    box-shadow: 0 0 10px var(--neon-red);
+    opacity: 0;
+}
+.scanning-active { opacity: 1; animation: scan 3s linear forwards; }
 
-/* 資訊面板 */
-.info-panel { padding: 20px; display: flex; flex-direction: column; }
-.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-.metric { background: rgba(0,0,0,0.2); padding: 10px; border-left: 3px solid var(--accent-green); }
-.metric .label { font-size: 0.7em; display: block; color: #888; }
-.metric .value { font-size: 1.2em; font-weight: bold; color: #fff; }
-.metric .value.huge { font-size: 2em; color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
-.location-info { margin-top: auto; font-size: 0.8em; color: var(--accent-green); border-top: 1px solid #333; padding-top: 10px; }
+@keyframes scan { from { left: 0%; } to { left: 100%; } }
+@keyframes blink { 50% { opacity: 0; } }
 
-@keyframes blink { 50% { opacity: 0.5; } }
+/* 底部地圖與數據 */
+.bottom-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; min-height: 0; }
+.map-box { border: 1px solid var(--neon-blue); position: relative; height: 100%; }
+.map-overlay { position: absolute; top: 10px; right: 10px; z-index: 400; background: rgba(0,0,0,0.8); color: var(--neon-blue); padding: 5px; border: 1px solid var(--neon-blue); font-size: 0.8em;}
+#map { height: 100%; width: 100%; background: #000; }
+
+.data-box { background: var(--panel-bg); border: 1px solid var(--text-dim); padding: 15px; display: flex; flex-direction: column;}
+.data-box h2 { margin: 0 0 15px 0; color: #fff; font-size: 1.2em; border-bottom: 2px solid var(--neon-blue); display: inline-block; padding-bottom: 5px;}
+
+.data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.d-item { background: rgba(255,255,255,0.05); padding: 10px; }
+.full-width { grid-column: span 2; }
+.label { display: block; font-size: 0.7em; color: #888; margin-bottom: 5px; }
+.val { font-size: 1.2em; color: #fff; font-weight: bold; }
+.huge { font-size: 2.5em; color: var(--neon-red); text-shadow: 0 0 15px var(--neon-red); }

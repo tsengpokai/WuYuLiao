@@ -1,0 +1,32 @@
+[
+  {
+    "code": "TW.HUAL",
+    "name": "Hualien Station",
+    "lat": 23.98,
+    "lon": 121.60,
+    "dist_km": 25,
+    "p_arrival_sec": 4.5,
+    "s_arrival_sec": 7.8,
+    "noise_level": 0.05
+  },
+  {
+    "code": "TW.NACB",
+    "name": "Yilan Station",
+    "lat": 24.45,
+    "lon": 121.75,
+    "dist_km": 68,
+    "p_arrival_sec": 11.2,
+    "s_arrival_sec": 19.5,
+    "noise_level": 0.08
+  },
+  {
+    "code": "TW.SSLB",
+    "name": "Nantou Station",
+    "lat": 23.90,
+    "lon": 120.95,
+    "dist_km": 85,
+    "p_arrival_sec": 14.8,
+    "s_arrival_sec": 25.2,
+    "noise_level": 0.06
+  }
+]
