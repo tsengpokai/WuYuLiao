@@ -1,296 +1,161 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SEISYNC | AI 地震監測教學平台</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEISYNC | AI 地震監測教學平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div class="scanline"></div>
-  <div class="bg-grid"></div>
+    <div class="scanline"></div>
+    <div class="bg-grid"></div>
 
-  <nav>
-    <div class="brand">
-      <div class="logo-box">S</div>
-      <div class="logo-text">SEI<span>SYNC</span>_EDU</div>
+    <nav>
+        <div class="brand">
+            <div class="logo-box">S</div>
+            <div class="logo-text">SEI<span>SYNC</span>_EDU</div>
+        </div>
+        <ul>
+            <li><a href="#section-1">01. 數據與模型</a></li>
+            <li><a href="#section-2">02. 核心模組</a></li>
+            <li><a href="#section-3">03. 實戰模擬</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        <header class="hero">
+            <h1 class="glitch" data-text="AI MEETS SEISMOLOGY">AI MEETS SEISMOLOGY</h1>
+            <p>從深度學習到全自動化監測 | 互動式教學演示</p>
+        </header>
+
+        <section id="section-1" class="panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 01</span>
+                <h2>數據模擬與 1D CNN 架構</h2>
+            </div>
+            
+            <div class="grid-2">
+                <div class="text-content">
+                    <h3>1. 數據模擬 (generate_synthetic_data)</h3>
+                    <ul>
+                        <li><strong class="highlight">現實問題：</strong> 真實地震數據難以取得且格式複雜。</li>
+                        <li><strong class="highlight">解決方案：</strong> 製造「假數據」。使用高斯白雜訊 (Gaussian noise)。</li>
+                        <li><strong class="highlight">脈衝訊號：</strong> 在隨機時間點加入類似 Ricker wavelet 的數學公式模擬 P/S 波能量。</li>
+                        <li><strong class="highlight">正規化 (Normalization)：</strong> 將振幅壓縮到 -1 至 1，幫助神經網路收斂。</li>
+                    </ul>
+
+                    <h3>2. AI 模型架構 (1D CNN)</h3>
+                    <ul>
+                        <li><strong class="highlight">為什麼用 1D CNN？</strong> 地震波是時間序列，1D 卷積核能捕捉「振幅跳變」特徵。</li>
+                        <li><strong>Conv1D：</strong> 負責「看」波形特徵。</li>
+                        <li><strong>MaxPooling1D：</strong> 負責「簡化」資訊，保留特徵。</li>
+                        <li><strong>Dense(1, sigmoid)：</strong> 輸出 0~1 機率 (地震/雜訊)。</li>
+                    </ul>
+                </div>
+
+                <div class="interactive-box">
+                    <div class="box-header">PYTHON CODE SIMULATION</div>
+                    <div class="canvas-container">
+                        <canvas id="chart-python"></canvas>
+                    </div>
+                    <div class="control-row">
+                        <button id="btn-gen-sample" class="cyber-btn">生成測試樣本 (Run Code)</button>
+                        <div id="pred-result" class="result-display">WAITING...</div>
+                    </div>
+                    <div class="visual-desc">
+                        <p><strong>視覺化 (plot_results)：</strong><br>
+                        上圖模擬 matplotlib 輸出。若 AI 預測正確(>0.5)，標題將顯示<span style="color:#0aff0a">綠色</span>；錯誤顯示紅色。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-2" class="panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 02</span>
+                <h2>SEISYNC 核心處理流程</h2>
+            </div>
+            
+            <div class="modules-grid">
+                <div class="module-card">
+                    <div class="mod-icon">01</div>
+                    <h3>相位拾取</h3>
+                    <div class="sub-text">Phase Picking</div>
+                    <div class="tag">RED-PAN</div>
+                    <p>從原始波形中「抓出」P 波與 S 波的到時。網頁呈現：波形圖上標示垂直線與信心水準。</p>
+                </div>
+                <div class="module-card">
+                    <div class="mod-icon">02</div>
+                    <h3>相位關聯</h3>
+                    <div class="sub-text">Phase Association</div>
+                    <div class="tag">GaMMA</div>
+                    <p>將不同測站抓到的波形關聯到同一個地震事件。網頁呈現：多個波形圖的連動顯示。</p>
+                </div>
+                <div class="module-card">
+                    <div class="mod-icon">03</div>
+                    <h3>震源定位</h3>
+                    <div class="sub-text">Location</div>
+                    <div class="tag">NonLinLoc-SSST</div>
+                    <p>計算地震發生的 3D 絕對位置 (經緯度、深度)。網頁呈現：地圖標示震央與誤差橢圓。</p>
+                </div>
+                <div class="module-card">
+                    <div class="mod-icon">04</div>
+                    <h3>規模估計</h3>
+                    <div class="sub-text">Magnitude</div>
+                    <div class="tag">Regression</div>
+                    <p>根據最大地動振幅推算規模。網頁呈現：資訊面板顯示 M<sub>L</sub> 數值。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-3" class="panel large-panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 03</span>
+                <h2>全自動監測系統實戰 (Live Demo)</h2>
+            </div>
+            
+            <div class="sim-controls">
+                <button id="btn-trigger" class="cyber-btn danger">INITIATE EARTHQUAKE (觸發地震)</button>
+                <div class="status-display">
+                    <span>SYSTEM: <strong id="sys-status" style="color:#0aff0a">ONLINE</strong></span>
+                    <span>WAVEFRONT: <strong id="wave-rad">0 km</strong></span>
+                </div>
+            </div>
+
+            <div class="sim-grid">
+                <div class="waves-col">
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-0">TW.HUAL (25km)</div>
+                        <canvas id="chart-0"></canvas>
+                    </div>
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-1">TW.NACB (68km)</div>
+                        <canvas id="chart-1"></canvas>
+                    </div>
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-2">TW.SSLB (85km)</div>
+                        <canvas id="chart-2"></canvas>
+                    </div>
+                </div>
+
+                <div class="map-col">
+                    <div id="map"></div>
+                    <div id="loc-result" class="map-overlay-info">
+                        <h3>EVENT SOLUTION</h3>
+                        <div>LOC: <span id="res-loc">Analyzing...</span></div>
+                        <div>MAG: <span id="res-mag">--</span></div>
+                        <div>DEP: <span id="res-dep">--</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
-    <ul>
-      <li><a href="#section-0">00. 簡報重點</a></li>
-      <li><a href="#section-1">01. Data & Model</a></li>
-      <li><a href="#section-2">02. 核心模組</a></li>
-      <li><a href="#section-3">03. Live Pipeline</a></li>
-    </ul>
-  </nav>
-
-  <div class="container">
-    <header class="hero">
-      <h1 class="glitch" data-text="AI MEETS SEISMOLOGY">AI MEETS SEISMOLOGY</h1>
-      <p>從深度學習到全自動化監測 | 互動式教學演示（GitHub Pages）</p>
-    </header>
-
-    <!-- 00：簡報重點（補齊脈絡） -->
-    <section id="section-0" class="panel">
-      <div class="panel-header">
-        <span class="step-tag">PART 00</span>
-        <h2>簡報重點：兩條任務線 + 模組化系統</h2>
-      </div>
-
-      <div class="grid-2">
-        <div class="text-content">
-          <h3>為什麼要做地震監測？</h3>
-          <ul>
-            <li><strong class="highlight">長期：地震目錄（Cataloging）</strong> → 探索地震物理、補捉更多小震、看清斷層結構。</li>
-            <li><strong class="highlight">短期：地震預警（EEW）</strong> → 早偵測 P 波、爭取 S 波破壞前的反應時間。</li>
-          </ul>
-
-          <h3>為什麼用深度學習？</h3>
-          <ul>
-            <li>深度學習可自動抽特徵（不用手工 feature engineering）。</li>
-            <li>性能會隨資料量、網路規模上升；工程上常搭配 <span class="mono">Data augmentation / Transfer learning / Multitask learning</span>。</li>
-          </ul>
-        </div>
-
-        <div class="interactive-box">
-          <div class="box-header">PIPELINE SNAPSHOT</div>
-          <div class="kpi-grid">
-            <div class="kpi">
-              <div class="kpi-label">TASK</div>
-              <div class="kpi-value">EEW + Catalog</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-label">INPUT</div>
-              <div class="kpi-value">Seismograms</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-label">OUTPUT</div>
-              <div class="kpi-value">P/S picks → event → loc/mag</div>
-            </div>
-            <div class="kpi">
-              <div class="kpi-label">SYSTEM</div>
-              <div class="kpi-value">Modular AI agents</div>
-            </div>
-          </div>
-
-          <div class="note">
-            <strong>提示：</strong>本網站的 Live Demo 會把「相位拾取 → 關聯 → 定位 → 規模」以簡化版本跑一次，
-            對應 SEISYNC 的模組化概念（即時 + 近即時）。
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 01：Data & Model（加上 Augmentation 控制 + 更像研究 demo） -->
-    <section id="section-1" class="panel">
-      <div class="panel-header">
-        <span class="step-tag">PART 01</span>
-        <h2>數據模擬 × 模型概念（含資料增強互動）</h2>
-      </div>
-
-      <div class="grid-2">
-        <div class="text-content">
-          <h3>1) 數據模擬（Synthetic Seismograms）</h3>
-          <ul>
-            <li><strong class="highlight">現實問題：</strong> 真實地震數據難取得且格式複雜。</li>
-            <li><strong class="highlight">解決方案：</strong> 以高斯白雜訊做背景，插入類 Ricker 的突發能量做事件訊號。</li>
-            <li><strong class="highlight">Normalization：</strong> 壓到 -1~1，加速收斂並穩定訓練。</li>
-          </ul>
-
-          <h3>2) 模型概念（從「分類」到「逐點標註」）</h3>
-          <ul>
-            <li>入門：1D CNN 判斷「整段有沒有事件」（classification）。</li>
-            <li>進階：像 U-Net/ARRU/RED-PAN 的做法，是輸出 <strong class="highlight">P/S 機率函數</strong>，做更精準的 phase picking。</li>
-          </ul>
-
-          <h3>3) 研究實務：資料增強（Augmentation）</h3>
-          <ul>
-            <li>目的：增加資料多樣性，提升真實場景泛化。</li>
-            <li>示例：事件疊加、裁切、時間平移（本頁右側可互動調整）。</li>
-          </ul>
-        </div>
-
-        <div class="interactive-box">
-          <div class="box-header">DATA LAB (Interactive)</div>
-
-          <div class="canvas-container">
-            <canvas id="chart-data"></canvas>
-          </div>
-
-          <div class="controls-col">
-            <div class="ctrl">
-              <label>Noise σ <span class="mono" id="v-noise">0.10</span></label>
-              <input id="noiseSigma" type="range" min="0.02" max="0.30" step="0.01" value="0.10">
-            </div>
-
-            <div class="ctrl">
-              <label>Augmentation: Superimpose event</label>
-              <input id="augSuper" type="checkbox" checked>
-            </div>
-
-            <div class="ctrl">
-              <label>Augmentation: Time shift</label>
-              <input id="augShift" type="checkbox" checked>
-            </div>
-
-            <div class="ctrl">
-              <label>Augmentation: Time clip</label>
-              <input id="augClip" type="checkbox">
-            </div>
-
-            <div class="control-row">
-              <button id="btn-gen" class="cyber-btn">生成樣本</button>
-              <div id="data-badge" class="result-display">READY</div>
-            </div>
-
-            <div class="visual-desc">
-              <p>
-                你生成的是「背景雜訊 +（可選）事件訊號」；再透過資料增強模擬真實場景的變化。
-                下一段 Live Pipeline 會用類似資料流跑四模組。
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 02：核心模組（你可保留原本卡片，我只建議文字微調貼簡報） -->
-    <section id="section-2" class="panel">
-      <div class="panel-header">
-        <span class="step-tag">PART 02</span>
-        <h2>SEISYNC 核心處理流程（概念對照）</h2>
-      </div>
-
-      <div class="modules-grid">
-        <div class="module-card">
-          <div class="mod-icon">01</div>
-          <h3>相位拾取</h3>
-          <div class="sub-text">Phase Picking</div>
-          <div class="tag">ARRU / RED-PAN</div>
-          <p>輸出 P/S 的機率函數與到時（本網站以簡化版 probability function + threshold 示範）。</p>
-        </div>
-
-        <div class="module-card">
-          <div class="mod-icon">02</div>
-          <h3>相位關聯</h3>
-          <div class="sub-text">Phase Association</div>
-          <div class="tag">Back-projection</div>
-          <p>把多測站 picks 關聯成同一事件；本網站以「同一事件窗 + 到時一致性」做簡化關聯。</p>
-        </div>
-
-        <div class="module-card">
-          <div class="mod-icon">03</div>
-          <h3>震源定位</h3>
-          <div class="sub-text">Location</div>
-          <div class="tag">Grid / Least squares</div>
-          <p>用多站到時差估計震央與深度（示範版用 2D grid search + 誤差圓）。</p>
-        </div>
-
-        <div class="module-card">
-          <div class="mod-icon">04</div>
-          <h3>規模估計</h3>
-          <div class="sub-text">Magnitude</div>
-          <div class="tag">Local regression</div>
-          <p>用最大振幅與距離衰減估 ML（示範版：logA + α·logR + β·R 的簡式）。</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 03：Live Pipeline（真正算出 loc/mag；加上 picker 機率曲線 + association table） -->
-    <section id="section-3" class="panel large-panel">
-      <div class="panel-header">
-        <span class="step-tag">PART 03</span>
-        <h2>全自動監測系統實戰（Four Modules Live Demo）</h2>
-      </div>
-
-      <div class="sim-controls">
-        <button id="btn-trigger" class="cyber-btn danger">INITIATE EVENT（觸發事件）</button>
-
-        <div class="status-display">
-          <span>SYSTEM: <strong id="sys-status" class="ok">ONLINE</strong></span>
-          <span>THRESH(P): <strong id="thrP">0.60</strong></span>
-          <span>THRESH(S): <strong id="thrS">0.55</strong></span>
-        </div>
-      </div>
-
-      <div class="threshold-row">
-        <div class="ctrl">
-          <label>P threshold</label>
-          <input id="pThresh" type="range" min="0.30" max="0.90" step="0.01" value="0.60">
-        </div>
-        <div class="ctrl">
-          <label>S threshold</label>
-          <input id="sThresh" type="range" min="0.30" max="0.90" step="0.01" value="0.55">
-        </div>
-      </div>
-
-      <div class="sim-grid">
-        <div class="waves-col">
-          <div class="wave-unit">
-            <div class="st-badge" id="badge-0">TW.HUAL</div>
-            <canvas id="chart-0"></canvas>
-            <div class="mini-bar">
-              <span class="mono">P_prob</span><canvas id="probP-0" height="28"></canvas>
-              <span class="mono">S_prob</span><canvas id="probS-0" height="28"></canvas>
-            </div>
-          </div>
-
-          <div class="wave-unit">
-            <div class="st-badge" id="badge-1">TW.NACB</div>
-            <canvas id="chart-1"></canvas>
-            <div class="mini-bar">
-              <span class="mono">P_prob</span><canvas id="probP-1" height="28"></canvas>
-              <span class="mono">S_prob</span><canvas id="probS-1" height="28"></canvas>
-            </div>
-          </div>
-
-          <div class="wave-unit">
-            <div class="st-badge" id="badge-2">TW.SSLB</div>
-            <canvas id="chart-2"></canvas>
-            <div class="mini-bar">
-              <span class="mono">P_prob</span><canvas id="probP-2" height="28"></canvas>
-              <span class="mono">S_prob</span><canvas id="probS-2" height="28"></canvas>
-            </div>
-          </div>
-
-          <div class="assoc-panel">
-            <div class="box-header">PHASE ASSOCIATION (Simplified)</div>
-            <table class="assoc-table">
-              <thead>
-                <tr>
-                  <th>Station</th>
-                  <th>P_pick</th>
-                  <th>S_pick</th>
-                  <th>Amax</th>
-                  <th>Use?</th>
-                </tr>
-              </thead>
-              <tbody id="assocBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="map-col">
-          <div id="map"></div>
-          <div id="loc-result" class="map-overlay-info">
-            <h3>EVENT SOLUTION</h3>
-            <div>LOC: <span id="res-loc">--</span></div>
-            <div>DEP: <span id="res-dep">--</span></div>
-            <div>MAG: <span id="res-mag">--</span></div>
-            <div class="small">Method: grid-search (demo) + ML regression (demo)</div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
