@@ -8,7 +8,7 @@
 **SEISYNC** (Seismic Synchronization) 是一個整合深度學習與即時地震學的監測儀表板。本專案展示了從波形訊號輸入到震源參數解算的視覺化流程。
 
 ## 🚀 線上展示 (Live Demo)
-👉 **[點擊這裡進入 SEISYNC 儀表板](https://你的帳號.github.io/seisync-live/)**
+👉 **[點擊這裡進入 SEISYNC 儀表板](https://tsengpokai.github.io/WuYuLiao/)**
 
 ## 核心功能 (Core Modules)
 
