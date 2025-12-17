@@ -3,164 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 地震學：從深度學習到全自動化監測 | NCKU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>SEISYNC | AI 地震監測教學平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="scanline"></div>
+    <div class="bg-grid"></div>
 
     <nav>
-        <div class="logo">SEISYNC <span class="subtitle">AI EARTHQUAKE MONITORING</span></div>
+        <div class="brand">
+            <div class="logo-box">S</div>
+            <div class="logo-text">SEI<span>SYNC</span>_EDU</div>
+        </div>
         <ul>
-            <li><a href="#section-1">數據模擬與 AI</a></li>
-            <li><a href="#section-2">四大核心模組</a></li>
-            <li><a href="#section-3">全自動監測實戰</a></li>
+            <li><a href="#section-1">01. 數據與模型</a></li>
+            <li><a href="#section-2">02. 核心模組</a></li>
+            <li><a href="#section-3">03. 實戰模擬</a></li>
         </ul>
     </nav>
 
     <div class="container">
         
         <header class="hero">
-            <h1>AI 遇上地震學</h1>
-            <p>從深度學習到全自動化監測系統展示</p>
-            <small>Based on Research by Dr. Wu-Yu Liao (NCKU)</small>
+            <h1 class="glitch" data-text="AI MEETS SEISMOLOGY">AI MEETS SEISMOLOGY</h1>
+            <p>從深度學習到全自動化監測 | 互動式教學演示</p>
         </header>
 
-        <section id="section-1" class="card">
-            <div class="section-title">
-                <h2>01. 基礎原理：數據模擬與 1D CNN</h2>
-                <p>解決真實數據難以取得的問題，利用合成數據訓練二元分類模型。</p>
+        <section id="section-1" class="panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 01</span>
+                <h2>數據模擬與 1D CNN 架構</h2>
             </div>
-
+            
             <div class="grid-2">
-                <div class="content-text">
-                    <h3>1. 數據模擬 (Data Simulation)</h3>
+                <div class="text-content">
+                    <h3>1. 數據模擬 (generate_synthetic_data)</h3>
                     <ul>
-                        <li><strong>現實問題：</strong>真實地震數據很難取得且格式複雜。</li>
-                        <li><strong>解決方案：</strong>我們製造「假數據」。</li>
-                        <li><strong>雜訊生成：</strong>使用高斯白雜訊 (Gaussian noise)。</li>
-                        <li><strong>訊號模擬：</strong>在隨機時間點加入類似 Ricker wavelet 的脈衝訊號模擬 P/S 波能量。</li>
-                        <li class="highlight"><strong>Normalization (正規化)：</strong>將波形振幅壓縮到 -1 到 1 之間，幫助神經網路收斂。</li>
+                        <li><strong class="highlight">現實問題：</strong> 真實地震數據難以取得且格式複雜。</li>
+                        <li><strong class="highlight">解決方案：</strong> 製造「假數據」。使用高斯白雜訊 (Gaussian noise)。</li>
+                        <li><strong class="highlight">脈衝訊號：</strong> 在隨機時間點加入類似 Ricker wavelet 的數學公式模擬 P/S 波能量。</li>
+                        <li><strong class="highlight">正規化 (Normalization)：</strong> 將振幅壓縮到 -1 至 1，幫助神經網路收斂。</li>
                     </ul>
 
                     <h3>2. AI 模型架構 (1D CNN)</h3>
-                    <p>為什麼用 1D CNN？地震波是時間序列數據。1D 卷積核會在時間軸滑動，捕捉「振幅跳變」或「頻率模式」。</p>
-                    <div class="code-box">
-                        <strong>結構說明：</strong><br>
-                        1. Conv1D: 負責「看」波形特徵。<br>
-                        2. MaxPooling1D: 負責「簡化」資訊，保留特徵。<br>
-                        3. GlobalAveragePooling1D: 壓縮成單一向量。<br>
-                        4. Dense(1, sigmoid): 輸出 0~1 機率 (地震/雜訊)。
-                    </div>
+                    <ul>
+                        <li><strong class="highlight">為什麼用 1D CNN？</strong> 地震波是時間序列，1D 卷積核能捕捉「振幅跳變」特徵。</li>
+                        <li><strong>Conv1D：</strong> 負責「看」波形特徵。</li>
+                        <li><strong>MaxPooling1D：</strong> 負責「簡化」資訊，保留特徵。</li>
+                        <li><strong>Dense(1, sigmoid)：</strong> 輸出 0~1 機率 (地震/雜訊)。</li>
+                    </ul>
                 </div>
 
                 <div class="interactive-box">
-                    <h3>互動演示：模型訓練成果預覽</h3>
-                    <p>點擊下方按鈕，模擬 Python 程式碼執行後的 `plot_results` 結果。</p>
-                    <button id="btn-gen-sample" class="action-btn">生成測試樣本 (Run Simulation)</button>
-                    
-                    <div class="chart-container-sm">
-                        <canvas id="chart-sample"></canvas>
+                    <div class="box-header">PYTHON CODE SIMULATION</div>
+                    <div class="canvas-container">
+                        <canvas id="chart-python"></canvas>
                     </div>
-                    <div id="prediction-result" class="pred-result">準備就緒...</div>
-                    
-                    <div class="note">
-                        <strong>進階應用 (Next Steps)：</strong><br>
-                        1. <strong>分割 (Segmentation)：</strong> 使用 U-Net/PhaseNet 精確標記 P/S 到時。<br>
-                        2. <strong>真實數據：</strong> 使用 ObsPy 讀取 SAC/MSEED 檔。<br>
-                        3. <strong>多測站：</strong> 輸入三維分量 (E, N, Z) 提高準確度。
+                    <div class="control-row">
+                        <button id="btn-gen-sample" class="cyber-btn">生成測試樣本 (Run Code)</button>
+                        <div id="pred-result" class="result-display">WAITING...</div>
+                    </div>
+                    <div class="visual-desc">
+                        <p><strong>視覺化 (plot_results)：</strong><br>
+                        上圖模擬 matplotlib 輸出。若 AI 預測正確(>0.5)，標題將顯示<span style="color:#0aff0a">綠色</span>；錯誤顯示紅色。</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="section-2" class="card">
-            <div class="section-title">
-                <h2>02. 系統架構：四大核心模組</h2>
-                <p>整合廖勿渝博士簡報中的先進流程，從波形到震源定位。</p>
+        <section id="section-2" class="panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 02</span>
+                <h2>SEISYNC 核心處理流程</h2>
             </div>
-
+            
             <div class="modules-grid">
                 <div class="module-card">
-                    <div class="step-num">STEP 01</div>
-                    <h3>相位拾取 (Phase Picking)</h3>
-                    <div class="model-tag">Model: RED-PAN</div>
-                    <p><strong>功能：</strong>從原始波形中「抓出」P 波與 S 波的精確到達時間。</p>
-                    <p><strong>呈現：</strong>波形圖上自動標示出 P/S 的垂直線，並顯示信心水準。</p>
+                    <div class="mod-icon">01</div>
+                    <h3>相位拾取</h3>
+                    <div class="sub-text">Phase Picking</div>
+                    <div class="tag">RED-PAN</div>
+                    <p>從原始波形中「抓出」P 波與 S 波的到時。網頁呈現：波形圖上標示垂直線與信心水準。</p>
                 </div>
-
                 <div class="module-card">
-                    <div class="step-num">STEP 02</div>
-                    <h3>相位關聯 (Phase Association)</h3>
-                    <div class="model-tag">Model: GaMMA</div>
-                    <p><strong>功能：</strong>將不同測站抓到的波形關聯到同一個地震事件。</p>
-                    <p><strong>呈現：</strong>多個波形圖的連動顯示，排除錯誤關聯。</p>
+                    <div class="mod-icon">02</div>
+                    <h3>相位關聯</h3>
+                    <div class="sub-text">Phase Association</div>
+                    <div class="tag">GaMMA</div>
+                    <p>將不同測站抓到的波形關聯到同一個地震事件。網頁呈現：多個波形圖的連動顯示。</p>
                 </div>
-
                 <div class="module-card">
-                    <div class="step-num">STEP 03</div>
-                    <h3>震源定位 (Location)</h3>
-                    <div class="model-tag">Algorithm: NonLinLoc-SSST</div>
-                    <p><strong>功能：</strong>計算地震發生的 3D 絕對位置 (經度、緯度、深度)。</p>
-                    <p><strong>呈現：</strong>地圖標示震央位置與誤差橢圓。</p>
+                    <div class="mod-icon">03</div>
+                    <h3>震源定位</h3>
+                    <div class="sub-text">Location</div>
+                    <div class="tag">NonLinLoc-SSST</div>
+                    <p>計算地震發生的 3D 絕對位置 (經緯度、深度)。網頁呈現：地圖標示震央與誤差橢圓。</p>
                 </div>
-
                 <div class="module-card">
-                    <div class="step-num">STEP 04</div>
-                    <h3>規模估計 (Magnitude)</h3>
-                    <div class="model-tag">Method: Local Regressions</div>
-                    <p><strong>功能：</strong>根據最大地動速度/加速度推算規模。</p>
-                    <p><strong>呈現：</strong>資訊面板顯示 $M_L$ 數值。</p>
+                    <div class="mod-icon">04</div>
+                    <h3>規模估計</h3>
+                    <div class="sub-text">Magnitude</div>
+                    <div class="tag">Regression</div>
+                    <p>根據最大地動振幅推算規模。網頁呈現：資訊面板顯示 M<sub>L</sub> 數值。</p>
                 </div>
             </div>
         </section>
 
-        <section id="section-3" class="card">
-            <div class="section-title">
-                <h2>03. 綜合實戰：多測站全自動監測</h2>
-                <p>實際模擬三個測站 (Hualien, Yilan, Nantou) 接收地震波並進行定位。</p>
+        <section id="section-3" class="panel large-panel">
+            <div class="panel-header">
+                <span class="step-tag">PART 03</span>
+                <h2>全自動監測系統實戰 (Live Demo)</h2>
             </div>
-
-            <div class="control-bar">
-                <button id="btn-trigger-eq" class="action-btn danger">觸發地震 (TRIGGER M5.9)</button>
-                <div class="status-panel">
-                    <span>STATUS: <strong id="sys-status" style="color:#0aff0a">MONITORING</strong></span>
-                    <span>DETECTED: <strong id="det-count">0</strong> STATIONS</span>
-                    <span>SOLUTION: <strong id="final-loc">WAITING...</strong></span>
+            
+            <div class="sim-controls">
+                <button id="btn-trigger" class="cyber-btn danger">INITIATE EARTHQUAKE (觸發地震)</button>
+                <div class="status-display">
+                    <span>SYSTEM: <strong id="sys-status" style="color:#0aff0a">ONLINE</strong></span>
+                    <span>WAVEFRONT: <strong id="wave-rad">0 km</strong></span>
                 </div>
             </div>
 
-            <div class="simulation-grid">
+            <div class="sim-grid">
                 <div class="waves-col">
-                    <div class="wave-box">
-                        <div class="st-label">TW.HUAL (Dist: 25km)</div>
-                        <canvas id="wave-0"></canvas>
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-0">TW.HUAL (25km)</div>
+                        <canvas id="chart-0"></canvas>
                     </div>
-                    <div class="wave-box">
-                        <div class="st-label">TW.NACB (Dist: 68km)</div>
-                        <canvas id="wave-1"></canvas>
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-1">TW.NACB (68km)</div>
+                        <canvas id="chart-1"></canvas>
                     </div>
-                    <div class="wave-box">
-                        <div class="st-label">TW.SSLB (Dist: 85km)</div>
-                        <canvas id="wave-2"></canvas>
+                    <div class="wave-unit">
+                        <div class="st-badge" id="badge-2">TW.SSLB (85km)</div>
+                        <canvas id="chart-2"></canvas>
                     </div>
                 </div>
 
                 <div class="map-col">
                     <div id="map"></div>
+                    <div id="loc-result" class="map-overlay-info">
+                        <h3>EVENT SOLUTION</h3>
+                        <div>LOC: <span id="res-loc">Analyzing...</span></div>
+                        <div>MAG: <span id="res-mag">--</span></div>
+                        <div>DEP: <span id="res-dep">--</span></div>
+                    </div>
                 </div>
             </div>
         </section>
 
     </div>
-    
-    <footer>
-        &copy; 2025 SEISYNC Education Project. Interactive Demo for Seismology AI.
-    </footer>
-
     <script src="script.js"></script>
 </body>
 </html>
