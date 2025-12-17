@@ -26,7 +26,7 @@
     </div>
     <ul>
       <li><a href="#sec-hero">HOME</a></li>
-      <li><a href="#sec-knowledge">KNOWLEDGE</a></li>
+      <li><a href="#sec-part01">PART 01</a></li>
       <li><a href="#sec-modules">MODULES</a></li>
       <li><a href="#sec-console">MONITOR</a></li>
     </ul>
@@ -41,13 +41,13 @@
           <div class="pill">AI Seismic Monitoring • Demo + Teaching</div>
           <h1 class="hero-title">把「地震波形 → 震央」做成可互動的監測台</h1>
           <p class="hero-sub">
-            你將看到：三測站波形依距離產生 <span class="accent">Moveout</span>，
-            Phase Picking 成功後，系統自動完成 Association 與 Location，地圖顯示星號與連線。
+            這個網站用兩段互動帶你入門：<span class="accent">PART 01</span> 先用假數據理解模型如何判斷「地震/雜訊」；
+            接著進入 <span class="accent">MONITOR</span> 用三測站波形展示 Moveout、相位拾取、相位關聯與定位。
           </p>
 
           <div class="hero-actions">
             <a class="btn-primary" href="#sec-console">Start Live Demo</a>
-            <a class="btn-ghost" href="#sec-knowledge">Learn the Concepts</a>
+            <a class="btn-ghost" href="#sec-part01">Learn Part 01</a>
           </div>
 
           <div class="hero-kpis">
@@ -78,31 +78,27 @@
 
             <div class="mini-body">
               <div class="mini-row">
-                <div class="mini-label">MODE</div>
-                <div class="mini-val accent">EEW / Cataloging</div>
+                <div class="mini-label">Core idea</div>
+                <div class="mini-val accent">Time-series → picks → event</div>
               </div>
               <div class="mini-row">
-                <div class="mini-label">PHASE</div>
+                <div class="mini-label">Phase</div>
                 <div class="mini-val">P/S probability → picks</div>
               </div>
               <div class="mini-row">
-                <div class="mini-label">ASSOC</div>
-                <div class="mini-val">multi-station linking</div>
+                <div class="mini-label">Moveout</div>
+                <div class="mini-val">distance controls arrival</div>
               </div>
               <div class="mini-row">
-                <div class="mini-label">LOC</div>
-                <div class="mini-val">grid-search (demo)</div>
-              </div>
-              <div class="mini-row">
-                <div class="mini-label">MAG</div>
-                <div class="mini-val">local regression (demo)</div>
+                <div class="mini-label">Location</div>
+                <div class="mini-val">grid-search (teaching)</div>
               </div>
 
               <div class="stepper">
-                <button class="step" data-jump="#sec-console"><span>01</span> Moveout</button>
-                <button class="step" data-jump="#sec-console"><span>02</span> Picking</button>
-                <button class="step" data-jump="#sec-console"><span>03</span> Assoc + Loc</button>
-                <button class="step" data-jump="#sec-console"><span>04</span> Mag</button>
+                <button class="step" data-jump="#sec-part01"><span>01</span> Data + 1D CNN</button>
+                <button class="step" data-jump="#sec-console"><span>02</span> Moveout</button>
+                <button class="step" data-jump="#sec-console"><span>03</span> Picking + Assoc</button>
+                <button class="step" data-jump="#sec-console"><span>04</span> Location + Mag</button>
               </div>
             </div>
           </div>
@@ -117,75 +113,97 @@
       </div>
     </section>
 
-    <!-- KNOWLEDGE -->
-    <section id="sec-knowledge" class="panel">
+    <!-- PART 01 -->
+    <section id="sec-part01" class="panel">
       <div class="panel-header">
-        <span class="step-tag">KNOWLEDGE</span>
-        <h2>簡報重點知識：用「少文字、可掃讀」方式呈現</h2>
+        <span class="step-tag">PART 01</span>
+        <h2>數據模擬與 1D CNN 架構（含互動式 Python Code Simulation）</h2>
       </div>
 
-      <div class="knowledge-grid">
-        <div class="card">
-          <div class="card-top">
-            <div class="chip">01</div>
-            <h3>數據模擬原理</h3>
+      <div class="grid-2">
+        <!-- LEFT: text (more beginner-friendly) -->
+        <div>
+          <div class="hblock">
+            <h3>1) 數據模擬（generate_synthetic_data）</h3>
+            <p class="para">
+              在真實地震專案中，資料常見問題是：<span class="accent">難取得</span>（授權、分散在不同資料庫）、
+              <span class="accent">格式複雜</span>（SAC/MSEED、台站資訊、採樣率不一）、且前處理（去趨勢、濾波、切窗）需要經驗。
+              因此入門教學會先用「假數據」讓你理解模型輸入輸出與訓練邏輯。
+            </p>
+
+            <ul class="bullets">
+              <li><b class="g">背景雜訊：</b>使用高斯白雜訊（Gaussian noise）模擬儀器/環境噪音。</li>
+              <li><b class="g">事件訊號：</b>在某個時間點加入類 Ricker wavelet 的突發能量，模擬 P/S 波到來時「能量突然增強」。</li>
+              <li><b class="g">Normalization：</b>把振幅壓到 -1 ~ 1，避免極端值主導訓練，讓神經網路更快收斂、梯度更穩定。</li>
+            </ul>
           </div>
-          <ul class="bullets">
-            <li>背景：高斯白雜訊（Gaussian noise）</li>
-            <li>事件：類 Ricker 的突發能量（模擬 P/S 波）</li>
-            <li>Normalization：振幅壓到 -1~1（更穩定、收斂更快）</li>
-          </ul>
-          <div class="card-foot mono subtle">generate_synthetic_data • augmentation ready</div>
+
+          <div class="hblock">
+            <h3>2) 模型架構（build_simple_seismic_model：1D CNN）</h3>
+            <p class="para">
+              地震波形本質是時間序列。1D CNN 的卷積核會沿時間軸滑動，學到「局部特徵」：例如振幅跳變、短時間的頻率型態、包絡能量。
+              這是一個常見且有效的入門選擇。
+            </p>
+
+            <div class="diagram">
+              <div class="node">Conv1D</div>
+              <div class="arrow">→</div>
+              <div class="node">MaxPooling1D</div>
+              <div class="arrow">→</div>
+              <div class="node">GlobalAvgPool</div>
+              <div class="arrow">→</div>
+              <div class="node">Dense(sigmoid)</div>
+            </div>
+
+            <ul class="bullets">
+              <li><b>Conv1D：</b>負責「看」波形，抽取局部形狀/頻率特徵。</li>
+              <li><b>MaxPooling1D：</b>降維與抗噪，保留關鍵反應，降低計算量。</li>
+              <li><b>GlobalAveragePooling：</b>把整段特徵壓縮成固定長度向量，減少過擬合風險。</li>
+              <li><b>Dense(sigmoid)：</b>輸出 0~1 的機率，代表「這段包含事件」的可能性。</li>
+            </ul>
+          </div>
+
+          <div class="accordion">
+            <details open>
+              <summary>3) 視覺化（plot_results）在看什麼？</summary>
+              <p>
+                我們把波形、真實標籤（noise/earthquake）、以及模型輸出的機率一起呈現。
+                教學重點不是「一次就 100% 正確」，而是讓你看到模型學會把「純雜訊」與「有突發能量的事件」分開。
+                在右側互動面板中，若模型判斷與真實一致，顯示綠色；不一致則顯示紅色。
+              </p>
+            </details>
+            <details>
+              <summary>進階：從分類到分割（Segmentation）</summary>
+              <p>
+                入門分類只回答「整段有沒有地震」。進階模型（如 U-Net、PhaseNet、EQTransformer）會對每個時間點輸出 P/S/Noise 機率，
+                精準標記到時。你的 MONITOR 區塊展示的就是「以 picks 串起後續流程」的概念。
+              </p>
+            </details>
+          </div>
         </div>
 
-        <div class="card">
-          <div class="card-top">
-            <div class="chip">02</div>
-            <h3>1D CNN 架構（入門版）</h3>
-          </div>
-          <div class="diagram">
-            <div class="node">Conv1D</div>
-            <div class="arrow">→</div>
-            <div class="node">MaxPool</div>
-            <div class="arrow">→</div>
-            <div class="node">GAP</div>
-            <div class="arrow">→</div>
-            <div class="node">Dense(sigmoid)</div>
-          </div>
-          <p class="small">
-            地震波是時間序列。1D kernel 在時間軸滑動，抓到「振幅跳變 / 頻率型態」等局部特徵。
-          </p>
-          <div class="card-foot mono subtle">build_simple_seismic_model</div>
-        </div>
+        <!-- RIGHT: interactive simulation like your screenshot -->
+        <div class="interactive-box">
+          <div class="box-header">PYTHON CODE SIMULATION</div>
 
-        <div class="card">
-          <div class="card-top">
-            <div class="chip">03</div>
-            <h3>視覺化（plot_results 概念）</h3>
+          <div class="canvas-container tall">
+            <canvas id="chart-sim"></canvas>
           </div>
-          <ul class="bullets">
-            <li>波形 + 真實標籤 + AI 機率</li>
-            <li>判對：標題綠色；判錯：紅色</li>
-            <li>每次生成不同，但模型應學會區分</li>
-          </ul>
-          <div class="card-foot mono subtle">matplotlib-like UI simulation</div>
-        </div>
-      </div>
 
-      <div class="accordion">
-        <details open>
-          <summary>進階應用：從分類到分割（Segmentation）</summary>
-          <p>
-            入門模型回答「整段有沒有事件」。進階模型會對每個時間點輸出類別（例如 P、S、Noise），
-            以機率函數精準標記 P/S 到時（例如 U-Net 類、PhaseNet、EQTransformer 等）。
-          </p>
-        </details>
-        <details>
-          <summary>真實數據與工程落地方向</summary>
-          <p>
-            可用 obspy 讀 SAC/MSEED；結合地震目錄資料集訓練；實務上常輸入三分量（E/N/Z）或多測站資料提升可靠度。
-          </p>
-        </details>
+          <div class="control-row">
+            <button id="btn-sim" class="cyber-btn">生成測試樣本（RUN CODE）</button>
+            <div id="sim-pred" class="result-display mono">AI PRED: WAITING…</div>
+          </div>
+
+          <div class="sim-note">
+            <div class="mono subtle">What you should observe</div>
+            <ul class="bullets small">
+              <li><b class="g">Noise：</b>波形較雜亂，通常機率較低。</li>
+              <li><b class="g">Earthquake：</b>中間會出現突起/振動包絡，機率較高。</li>
+              <li><b class="g">每次不同：</b>因為隨機生成，但模型應能學會區分兩者。</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -193,7 +211,7 @@
     <section id="sec-modules" class="panel">
       <div class="panel-header">
         <span class="step-tag">MODULES</span>
-        <h2>四大核心模組（漂亮卡片 + 專業解釋）</h2>
+        <h2>四大核心模組（RED-PAN / GaMMA / NonLinLoc / Magnitude）</h2>
       </div>
 
       <div class="modules-grid">
@@ -203,7 +221,8 @@
           <div class="sub-text">Phase Picking</div>
           <div class="tag">RED-PAN</div>
           <p>
-            將原始波形轉成 P/S 機率函數，跨過門檻即產生 picks。本網站用「機率曲線 + threshold」視覺化 Phase Picking。
+            以深度學習輸出 P/S 機率函數，跨過門檻後形成 picks（到時）。
+            在 MONITOR 中你會看到每站依 Moveout 先後到達，完成 picks 後整排變綠。
           </p>
         </div>
 
@@ -213,7 +232,8 @@
           <div class="sub-text">Phase Association</div>
           <div class="tag">GaMMA</div>
           <p>
-            把多測站的 picks 連成同一個事件。本網站以「事件窗 + 多站一致性」示範，並用地圖連線呈現關聯結果。
+            把多測站 picks 關聯成同一個事件。
+            在 MONITOR 中，picks 全部成功後才會顯示「星號 + 連線」，代表事件被關聯並定位。
           </p>
         </div>
 
@@ -223,7 +243,8 @@
           <div class="sub-text">Location</div>
           <div class="tag">NonLinLoc</div>
           <p>
-            用多站到時資訊估計震央位置。本網站用 2D grid-search（教學版）求出震央並畫誤差圈。
+            以多站到時估計震央（經緯度）與不確定性。
+            本教學以 grid-search 示範定位概念（正式系統可使用更完整的速度模型與方法）。
           </p>
         </div>
 
@@ -231,9 +252,10 @@
           <div class="mod-icon">04</div>
           <h3>規模估計</h3>
           <div class="sub-text">Magnitude</div>
-          <div class="tag">Local Regression</div>
+          <div class="tag">Regression</div>
           <p>
-            以最大振幅與距離衰減估 ML。本網站用簡化回歸式示範（非正式地震學公式）。
+            用最大振幅與距離衰減估計 M<sub>L</sub>（教學用簡化回歸式）。
+            MONITOR 右下資訊面板會顯示規模估計結果。
           </p>
         </div>
       </div>
@@ -269,9 +291,7 @@
       </div>
 
       <div class="sim-grid">
-        <!-- LEFT: waveforms -->
         <div class="waves-col">
-
           <div class="wave-unit">
             <div class="st-badge" id="badge-0">TW.HUAL</div>
             <div class="wave-meta mono subtle">
@@ -305,7 +325,6 @@
           </div>
         </div>
 
-        <!-- RIGHT: map + solution -->
         <div class="map-col">
           <div id="map"></div>
 
