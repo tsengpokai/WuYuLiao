@@ -1,0 +1,53 @@
+/* 缺的 blink 動畫（你原本有用到但沒定義） */
+@keyframes blink { 
+  0% { opacity: 1; } 
+  50% { opacity: 0.2; } 
+  100% { opacity: 1; } 
+}
+
+.ok { color: var(--neon-green); }
+.bad { color: var(--neon-red); }
+
+.controls-col { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
+.ctrl label { display: flex; justify-content: space-between; color: #aaa; font-size: 0.85rem; }
+.ctrl input[type="range"] { width: 100%; }
+
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { border: 1px solid #333; padding: 10px; background: rgba(255,255,255,0.02); }
+.kpi-label { font-family: 'Share Tech Mono'; color: #666; font-size: 0.75rem; }
+.kpi-value { margin-top: 4px; color: #fff; font-family: 'Share Tech Mono'; font-size: 0.95rem; }
+
+.note { margin-top: 12px; padding: 10px; border: 1px dashed #333; color: #aaa; font-size: 0.85rem; line-height: 1.5; }
+
+.threshold-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: #000;
+  border: 1px solid #333;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.mini-bar {
+  display: grid;
+  grid-template-columns: 54px 1fr 54px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px 10px 8px;
+  border-top: 1px solid #222;
+  background: rgba(0,0,0,0.65);
+}
+.mini-bar .mono { font-family: 'Share Tech Mono'; color: #666; font-size: 0.75rem; }
+
+.assoc-panel { background: #000; border: 1px solid #333; padding: 12px; }
+.assoc-table { width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono'; font-size: 0.85rem; }
+.assoc-table th, .assoc-table td { border-bottom: 1px solid #222; padding: 6px; color: #aaa; }
+.assoc-table th { color: #777; font-weight: 700; }
+.assoc-table td strong { color: #fff; }
+.small { color: #777; font-size: 0.75rem; margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .threshold-row { grid-template-columns: 1fr; }
+  .mini-bar { grid-template-columns: 54px 1fr; grid-auto-rows: auto; }
+}
