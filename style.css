@@ -1,0 +1,131 @@
+:root {
+    --bg-color: #0b0c10;
+    --panel-color: #1f2833;
+    --border-color: #45a29e;
+    --accent-green: #66fcf1;
+    --accent-red: #ff4d4d;
+    --text-main: #c5c6c7;
+    --font-mono: 'Roboto Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-mono);
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100%;
+}
+
+/* 側邊欄 */
+.sidebar {
+    background: #000;
+    border-right: 1px solid var(--border-color);
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo { width: 40px; height: 40px; }
+.logo-text { color: var(--accent-green); margin: 0; letter-spacing: 2px; }
+.logo-text span { color: #fff; }
+.subtitle { font-size: 0.8em; color: #888; margin-top: -15px; }
+
+/* 按鈕樣式 */
+.step-group { margin-bottom: 15px; }
+.step-label { font-size: 0.7em; color: var(--border-color); display: block; margin-bottom: 5px; }
+
+.cyber-btn {
+    width: 100%;
+    background: rgba(69, 162, 158, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--accent-green);
+    padding: 12px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cyber-btn:hover:not([disabled]) {
+    background: var(--accent-green);
+    color: #000;
+    box-shadow: 0 0 15px var(--accent-green);
+}
+
+.cyber-btn:disabled {
+    border-color: #333;
+    color: #555;
+    cursor: not-allowed;
+}
+
+/* Console Log */
+.status-box { flex-grow: 1; display: flex; flex-direction: column; margin-top: auto; }
+.console-log {
+    background: #000;
+    border: 1px solid #333;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    font-size: 0.75em;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+}
+
+/* 主要區域 */
+.dashboard {
+    padding: 20px;
+    display: grid;
+    grid-template-rows: 45% 1fr; /* 上下比例 */
+    gap: 20px;
+}
+
+.panel {
+    background: var(--panel-color);
+    border: 1px solid var(--border-color);
+    position: relative;
+    border-radius: 4px;
+}
+
+.panel-header {
+    background: rgba(0,0,0,0.3);
+    padding: 8px 15px;
+    font-size: 0.8em;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+}
+
+.live-indicator { color: var(--accent-red); animation: blink 1s infinite; }
+
+.waveform-section { display: flex; flex-direction: column; }
+.chart-container { flex-grow: 1; position: relative; width: 100%; padding: 10px; }
+
+.bottom-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+/* 地圖 */
+#map { height: 100%; width: 100%; z-index: 1; }
+
+/* 資訊面板 */
+.info-panel { padding: 20px; display: flex; flex-direction: column; }
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+.metric { background: rgba(0,0,0,0.2); padding: 10px; border-left: 3px solid var(--accent-green); }
+.metric .label { font-size: 0.7em; display: block; color: #888; }
+.metric .value { font-size: 1.2em; font-weight: bold; color: #fff; }
+.metric .value.huge { font-size: 2em; color: var(--accent-red); text-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
+.location-info { margin-top: auto; font-size: 0.8em; color: var(--accent-green); border-top: 1px solid #333; padding-top: 10px; }
+
+@keyframes blink { 50% { opacity: 0.5; } }

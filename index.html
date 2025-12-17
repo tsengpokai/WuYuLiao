@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEISYNC | AI Earthquake Monitoring</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="assets/logo.svg" alt="Logo" class="brand-logo">
+                <h1 class="logo-text">SEI<span>SYNC</span></h1>
+            </div>
+            <p class="subtitle">RED-PAN / GaMMA System</p>
+            
+            <div class="control-panel">
+                <div class="step-group">
+                    <span class="step-label">STEP 01</span>
+                    <button id="btn-load" class="cyber-btn">載入即時波形</button>
+                </div>
+                <div class="step-group">
+                    <span class="step-label">STEP 02</span>
+                    <button id="btn-pick" class="cyber-btn" disabled>AI 相位拾取</button>
+                </div>
+                <div class="step-group">
+                    <span class="step-label">STEP 03</span>
+                    <button id="btn-locate" class="cyber-btn" disabled>震源定位解算</button>
+                </div>
+            </div>
+
+            <div class="status-box">
+                <h3>System Log</h3>
+                <div id="log-output" class="console-log">
+                    <div>> System initialized.</div>
+                    <div>> Waiting for data stream...</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="dashboard">
+            <section class="panel waveform-section">
+                <div class="panel-header">
+                    <span>LIVE WAVEFORM MONITOR (Z-Component)</span>
+                    <span class="live-indicator">● LIVE</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="seismicChart"></canvas>
+                </div>
+            </section>
+
+            <section class="bottom-section">
+                <div class="panel map-container">
+                    <div id="map"></div>
+                </div>
+                <div class="panel info-panel">
+                    <h2>Event Parameters</h2>
+                    <div class="metric-grid">
+                        <div class="metric">
+                            <span class="label">MAGNITUDE</span>
+                            <span class="value huge" id="val-mag">--.-</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">DEPTH</span>
+                            <span class="value" id="val-depth">-- km</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">CONFIDENCE</span>
+                            <span class="value" id="val-conf">--%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">PHASE COUNT</span>
+                            <span class="value" id="val-phase">--</span>
+                        </div>
+                    </div>
+                    <div class="location-info">
+                        <span class="label">LOCATION:</span>
+                        <span id="val-loc">Waiting for solution...</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
