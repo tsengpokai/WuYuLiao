@@ -3,159 +3,532 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEISYNC | AI 地震監測教學平台</title>
+    <title>SEISYNC | AI 地震全自動監測系統</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* =========================================
+           1. CSS 樣式設計 (Cyberpunk Style)
+           ========================================= */
+        :root {
+            --bg-dark: #050505;
+            --panel-bg: rgba(16, 20, 24, 0.95);
+            --neon-blue: #00f3ff;
+            --neon-green: #0aff0a;
+            --neon-red: #ff2a2a;
+            --neon-yellow: #fce83a;
+            --text-main: #e0e0e0;
+            --grid-line: rgba(0, 243, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            /* 網格背景 */
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* 掃描線特效 */
+        .scanline {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 50%);
+            background-size: 100% 4px; pointer-events: none; z-index: 9999;
+        }
+
+        /* 導航列 */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px 40px; background: rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--neon-blue);
+            position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+        .brand { font-family: 'Share Tech Mono'; font-size: 1.8rem; color: #fff; text-shadow: 0 0 10px var(--neon-blue); }
+        .brand span { color: var(--neon-blue); }
+        .nav-links button {
+            background: transparent; border: none; color: #aaa; font-size: 1rem; margin-left: 20px; cursor: pointer; transition: 0.3s; font-family: 'Noto Sans TC';
+        }
+        .nav-links button:hover { color: var(--neon-blue); text-shadow: 0 0 5px var(--neon-blue); }
+
+        /* 主容器 */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+        /* 通用面板樣式 */
+        .panel {
+            background: var(--panel-bg); border: 1px solid #333;
+            border-radius: 4px; padding: 25px; margin-bottom: 30px;
+            position: relative; overflow: hidden;
+        }
+        .panel::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--neon-blue);
+        }
+        .panel-title {
+            font-family: 'Share Tech Mono'; font-size: 1.5rem; color: var(--neon-blue); margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between;
+        }
+
+        /* 按鈕樣式 */
+        .cyber-btn {
+            background: rgba(0, 243, 255, 0.1); border: 1px solid var(--neon-blue);
+            color: var(--neon-blue); padding: 12px 24px; font-family: 'Share Tech Mono';
+            font-size: 1.1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cyber-btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px var(--neon-blue); }
+        .cyber-btn.danger { border-color: var(--neon-red); color: var(--neon-red); background: rgba(255, 42, 42, 0.1); }
+        .cyber-btn.danger:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 20px var(--neon-red); }
+
+        /* SECTION 1: 教學區佈局 */
+        .edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .knowledge-box ul { padding-left: 20px; color: #ccc; line-height: 1.8; }
+        .knowledge-box li { margin-bottom: 10px; }
+        .highlight { color: var(--neon-green); font-weight: bold; }
+        
+        .code-display {
+            background: #000; border: 1px solid #444; padding: 15px; font-family: monospace; color: #0aff0a; font-size: 0.9rem; height: 300px; overflow-y: auto; margin-bottom: 15px;
+        }
+        .result-tag { font-family: 'Share Tech Mono'; font-size: 1.5rem; float: right; }
+
+        /* SECTION 2: 四大模組卡片 */
+        .modules-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .module-card {
+            background: rgba(255,255,255,0.02); border: 1px solid #333; padding: 20px; transition: 0.3s; position: relative;
+        }
+        .module-card:hover { border-color: var(--neon-blue); transform: translateY(-5px); background: rgba(0, 243, 255, 0.05); }
+        .step-num { font-size: 3rem; color: rgba(255,255,255,0.1); position: absolute; top: 0; right: 10px; font-weight: bold; }
+        .module-card h3 { color: #fff; margin: 10px 0; }
+        .model-name { color: var(--neon-yellow); font-family: 'Share Tech Mono'; font-size: 0.9rem; margin-bottom: 10px; display: block; }
+
+        /* SECTION 3: 戰情室 (主要互動區) */
+        .war-room { display: grid; grid-template-columns: 350px 1fr; gap: 20px; height: 600px; }
+        
+        /* 左側波形欄 */
+        .waveforms-col { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+        .wave-slot {
+            flex: 1; background: #000; border: 1px solid #444; position: relative; padding: 5px;
+            display: flex; flex-direction: column;
+        }
+        .st-info {
+            display: flex; justify-content: space-between; padding: 0 5px;
+            font-family: 'Share Tech Mono'; font-size: 0.8rem; color: #888; margin-bottom: 2px;
+        }
+        .st-badge { background: #333; color: #fff; padding: 2px 5px; border-radius: 2px; }
+        .st-badge.active { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+        canvas { width: 100%; flex-grow: 1; }
+
+        /* 右側地圖欄 */
+        .map-col { border: 2px solid var(--neon-blue); position: relative; height: 100%; }
+        #map { width: 100%; height: 100%; background: #0b0c10; }
+        
+        /* 懸浮資訊面板 */
+        .hud-overlay {
+            position: absolute; bottom: 20px; right: 20px; width: 250px;
+            background: rgba(0,0,0,0.85); border: 1px solid var(--neon-red);
+            padding: 20px; z-index: 500; font-family: 'Share Tech Mono';
+            display: none; /* 初始隱藏 */
+            box-shadow: 0 0 20px rgba(255, 42, 42, 0.3);
+        }
+        .hud-overlay h3 { color: var(--neon-red); margin: 0 0 10px 0; border-bottom: 1px solid #555; }
+        .hud-row { display: flex; justify-content: space-between; margin-bottom: 5px; color: #fff; font-size: 1.1rem; }
+
+        /* 狀態列 */
+        .status-bar {
+            grid-column: span 2; display: flex; justify-content: space-between; align-items: center;
+            background: #111; padding: 10px 20px; border: 1px solid #333; margin-bottom: 10px;
+        }
+        .sys-status { font-family: 'Share Tech Mono'; color: var(--neon-green); }
+        .sys-status.alert { color: var(--neon-red); animation: blink 0.5s infinite; }
+
+        /* Leaflet 自定義圖示動畫 */
+        .station-icon { font-size: 20px; color: #555; transition: 0.2s; text-align: center; line-height: 20px; }
+        .station-icon.triggered { color: #0aff0a; text-shadow: 0 0 10px #0aff0a; transform: scale(1.5); }
+        .quake-star { color: #ff2a2a; font-size: 40px; text-shadow: 0 0 20px red; animation: pulse 0.8s infinite; text-align: center; line-height: 40px; }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        @media (max-width: 1000px) { .war-room { grid-template-columns: 1fr; height: auto; } .map-col { height: 400px; } }
+    </style>
 </head>
 <body>
     <div class="scanline"></div>
-    <div class="bg-grid"></div>
 
     <nav>
-        <div class="brand">
-            <div class="logo-box">S</div>
-            <div class="logo-text">SEI<span>SYNC</span>_EDU</div>
+        <div class="brand">SEI<span>SYNC</span>_V6.0</div>
+        <div class="nav-links">
+            <button onclick="scrollToId('edu-section')">01. AI 原理</button>
+            <button onclick="scrollToId('modules-section')">02. 核心模組</button>
+            <button onclick="scrollToId('demo-section')">03. 戰情室實戰</button>
         </div>
-        <ul>
-            <li><a href="#section-1">01. 數據與模型</a></li>
-            <li><a href="#section-2">02. 核心模組</a></li>
-            <li><a href="#section-3">03. 實戰模擬</a></li>
-        </ul>
     </nav>
 
     <div class="container">
-        
-        <header class="hero">
-            <h1 class="glitch" data-text="AI MEETS SEISMOLOGY">AI MEETS SEISMOLOGY</h1>
-            <p>從深度學習到全自動化監測 | 互動式教學演示</p>
-        </header>
 
-        <section id="section-1" class="panel">
-            <div class="panel-header">
-                <span class="step-tag">PART 01</span>
-                <h2>數據模擬與 1D CNN 架構</h2>
+        <div id="edu-section" class="panel">
+            <div class="panel-title">
+                <span>01. 數據模擬與 1D CNN 架構原理</span>
+                <span style="font-size: 0.8rem; opacity: 0.7;">PYTHON LOGIC SIMULATION</span>
             </div>
-            
-            <div class="grid-2">
-                <div class="text-content">
-                    <h3>1. 數據模擬 (generate_synthetic_data)</h3>
+            <div class="edu-grid">
+                <div class="knowledge-box">
+                    <h3>A. 數據模擬 (Synthetic Data)</h3>
                     <ul>
-                        <li><strong class="highlight">現實問題：</strong> 真實地震數據難以取得且格式複雜。</li>
-                        <li><strong class="highlight">解決方案：</strong> 製造「假數據」。使用高斯白雜訊 (Gaussian noise)。</li>
-                        <li><strong class="highlight">脈衝訊號：</strong> 在隨機時間點加入類似 Ricker wavelet 的數學公式模擬 P/S 波能量。</li>
-                        <li><strong class="highlight">正規化 (Normalization)：</strong> 將振幅壓縮到 -1 至 1，幫助神經網路收斂。</li>
+                        <li><span class="highlight">高斯白雜訊 (Gaussian Noise)：</span>解決真實數據不足問題，模擬地殼背景震動。</li>
+                        <li><span class="highlight">Ricker Wavelet：</span>使用數學公式模擬 P 波與 S 波的脈衝能量。</li>
+                        <li><span class="highlight">正規化 (Normalization)：</span>將數據壓縮至 [-1, 1]，加速 AI 模型收斂。</li>
                     </ul>
-
-                    <h3>2. AI 模型架構 (1D CNN)</h3>
+                    <h3>B. 1D CNN 模型架構</h3>
                     <ul>
-                        <li><strong class="highlight">為什麼用 1D CNN？</strong> 地震波是時間序列，1D 卷積核能捕捉「振幅跳變」特徵。</li>
-                        <li><strong>Conv1D：</strong> 負責「看」波形特徵。</li>
-                        <li><strong>MaxPooling1D：</strong> 負責「簡化」資訊，保留特徵。</li>
-                        <li><strong>Dense(1, sigmoid)：</strong> 輸出 0~1 機率 (地震/雜訊)。</li>
+                        <li><span class="highlight">Conv1D：</span>在時間軸上滑動，捕捉波形突變特徵。</li>
+                        <li><span class="highlight">MaxPooling：</span>降維並保留關鍵特徵。</li>
+                        <li><span class="highlight">Binary Classification：</span>輸出 0~1 機率值 (地震 vs 雜訊)。</li>
                     </ul>
                 </div>
-
-                <div class="interactive-box">
-                    <div class="box-header">PYTHON CODE SIMULATION</div>
-                    <div class="canvas-container">
-                        <canvas id="chart-python"></canvas>
+                <div>
+                    <div class="code-display" id="code-log">
+                        // System Ready...<br>
+                        // Click 'GENERATE SAMPLE' to run simulation logic.<br>
                     </div>
-                    <div class="control-row">
-                        <button id="btn-gen-sample" class="cyber-btn">生成測試樣本 (Run Code)</button>
-                        <div id="pred-result" class="result-display">WAITING...</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button class="cyber-btn" id="btn-gen-code">生成測試樣本 (Run Python Logic)</button>
+                        <div id="ai-result" class="result-tag" style="color: #555;">WAITING</div>
                     </div>
-                    <div class="visual-desc">
-                        <p><strong>視覺化 (plot_results)：</strong><br>
-                        上圖模擬 matplotlib 輸出。若 AI 預測正確(>0.5)，標題將顯示<span style="color:#0aff0a">綠色</span>；錯誤顯示紅色。</p>
+                    <div style="height: 100px; margin-top: 10px; border: 1px solid #333; background: #000;">
+                        <canvas id="python-chart"></canvas>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section id="section-2" class="panel">
-            <div class="panel-header">
-                <span class="step-tag">PART 02</span>
-                <h2>SEISYNC 核心處理流程</h2>
+        <div id="modules-section" class="panel">
+            <div class="panel-title"><span>02. SEISYNC 核心處理流程</span></div>
+            <div class="modules-container">
+                <div class="module-card">
+                    <span class="step-num">01</span>
+                    <span class="model-name">MODEL: RED-PAN</span>
+                    <h3>相位拾取 (Picking)</h3>
+                    <p>從雜訊中精確抓出 P 波與 S 波的到達時間。網頁呈現：波形圖上的垂直標記。</p>
+                </div>
+                <div class="module-card">
+                    <span class="step-num">02</span>
+                    <span class="model-name">MODEL: GaMMA</span>
+                    <h3>相位關聯 (Association)</h3>
+                    <p>將不同測站的訊號關聯至同一地震事件，排除誤觸發。網頁呈現：多測站連動。</p>
+                </div>
+                <div class="module-card">
+                    <span class="step-num">03</span>
+                    <span class="model-name">ALGO: NonLinLoc</span>
+                    <h3>震源定位 (Location)</h3>
+                    <p>計算經緯度與深度。網頁呈現：地圖上的三角定位連線與震央星號。</p>
+                </div>
+                <div class="module-card">
+                    <span class="step-num">04</span>
+                    <span class="model-name">METHOD: Regression</span>
+                    <h3>規模估計 (Magnitude)</h3>
+                    <p>根據最大地動振幅推算規模。網頁呈現：最終 M<sub>L</sub> 數值顯示。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="demo-section" class="panel">
+            <div class="panel-title">
+                <span>03. 全自動監測戰情室</span>
+                <span style="color: var(--neon-red); animation: blink 1s infinite;">● LIVE DEMO</span>
             </div>
             
-            <div class="modules-grid">
-                <div class="module-card">
-                    <div class="mod-icon">01</div>
-                    <h3>相位拾取</h3>
-                    <div class="sub-text">Phase Picking</div>
-                    <div class="tag">RED-PAN</div>
-                    <p>從原始波形中「抓出」P 波與 S 波的到時。網頁呈現：波形圖上標示垂直線與信心水準。</p>
+            <div class="status-bar">
+                <div style="display: flex; gap: 20px;">
+                    <button class="cyber-btn danger" id="btn-trigger">INITIATE EARTHQUAKE (觸發地震)</button>
+                    <span style="align-self: center; color: #888;">SCENARIO: M5.9 Hualien Offshore</span>
                 </div>
-                <div class="module-card">
-                    <div class="mod-icon">02</div>
-                    <h3>相位關聯</h3>
-                    <div class="sub-text">Phase Association</div>
-                    <div class="tag">GaMMA</div>
-                    <p>將不同測站抓到的波形關聯到同一個地震事件。網頁呈現：多個波形圖的連動顯示。</p>
-                </div>
-                <div class="module-card">
-                    <div class="mod-icon">03</div>
-                    <h3>震源定位</h3>
-                    <div class="sub-text">Location</div>
-                    <div class="tag">NonLinLoc-SSST</div>
-                    <p>計算地震發生的 3D 絕對位置 (經緯度、深度)。網頁呈現：地圖標示震央與誤差橢圓。</p>
-                </div>
-                <div class="module-card">
-                    <div class="mod-icon">04</div>
-                    <h3>規模估計</h3>
-                    <div class="sub-text">Magnitude</div>
-                    <div class="tag">Regression</div>
-                    <p>根據最大地動振幅推算規模。網頁呈現：資訊面板顯示 M<sub>L</sub> 數值。</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="section-3" class="panel large-panel">
-            <div class="panel-header">
-                <span class="step-tag">PART 03</span>
-                <h2>全自動監測系統實戰 (Live Demo)</h2>
-            </div>
-            
-            <div class="sim-controls">
-                <button id="btn-trigger" class="cyber-btn danger">INITIATE EARTHQUAKE (觸發地震)</button>
-                <div class="status-display">
-                    <span>SYSTEM: <strong id="sys-status" style="color:#0aff0a">ONLINE</strong></span>
-                    <span>WAVEFRONT: <strong id="wave-rad">0 km</strong></span>
-                </div>
+                <div class="sys-status" id="sys-status">SYSTEM STATUS: MONITORING</div>
             </div>
 
-            <div class="sim-grid">
-                <div class="waves-col">
-                    <div class="wave-unit">
-                        <div class="st-badge" id="badge-0">TW.HUAL (25km)</div>
+            <div class="war-room">
+                <div class="waveforms-col">
+                    <div class="wave-slot">
+                        <div class="st-info">
+                            <span class="st-badge" id="badge-0">TW.HUAL</span>
+                            <span>DIST: 25 KM</span>
+                        </div>
                         <canvas id="chart-0"></canvas>
                     </div>
-                    <div class="wave-unit">
-                        <div class="st-badge" id="badge-1">TW.NACB (68km)</div>
+                    <div class="wave-slot">
+                        <div class="st-info">
+                            <span class="st-badge" id="badge-1">TW.NACB</span>
+                            <span>DIST: 68 KM</span>
+                        </div>
                         <canvas id="chart-1"></canvas>
                     </div>
-                    <div class="wave-unit">
-                        <div class="st-badge" id="badge-2">TW.SSLB (85km)</div>
+                    <div class="wave-slot">
+                        <div class="st-info">
+                            <span class="st-badge" id="badge-2">TW.SSLB</span>
+                            <span>DIST: 85 KM</span>
+                        </div>
                         <canvas id="chart-2"></canvas>
                     </div>
                 </div>
 
                 <div class="map-col">
                     <div id="map"></div>
-                    <div id="loc-result" class="map-overlay-info">
-                        <h3>EVENT SOLUTION</h3>
-                        <div>LOC: <span id="res-loc">Analyzing...</span></div>
-                        <div>MAG: <span id="res-mag">--</span></div>
-                        <div>DEP: <span id="res-dep">--</span></div>
+                    <div class="hud-overlay" id="hud-result">
+                        <h3>EVENT CONFIRMED</h3>
+                        <div class="hud-row"><span>MAG:</span><span style="color:var(--neon-yellow)">5.9</span></div>
+                        <div class="hud-row"><span>DEP:</span><span>12.4 km</span></div>
+                        <div class="hud-row" style="font-size: 0.8rem; margin-top: 10px; color: #aaa;">24.15°N, 121.90°E</div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
 
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        /* =========================================
+           2. JavaScript 邏輯 (包含數學模擬與動畫)
+           ========================================= */
+
+        // Helper: 捲動到區塊
+        function scrollToId(id) { document.getElementById(id).scrollIntoView(); }
+
+        // Helper: 高斯雜訊生成 (模擬 Python random.normal)
+        function gaussianNoise() {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // -----------------------------------------
+        // PART 1: Python 邏輯模擬區
+        // -----------------------------------------
+        const ctxPython = document.getElementById('python-chart').getContext('2d');
+        const pythonChart = new Chart(ctxPython, {
+            type: 'line',
+            data: {
+                labels: Array(100).fill(''),
+                datasets: [{ data: Array(100).fill(0), borderColor: '#444', borderWidth: 1, pointRadius: 0 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: { x: {display:false}, y: {display:false, min: -1.5, max: 1.5} },
+                plugins: { legend: {display: false} }
+            }
+        });
+
+        document.getElementById('btn-gen-code').addEventListener('click', () => {
+            const codeLog = document.getElementById('code-log');
+            const aiResult = document.getElementById('ai-result');
+            
+            // 隨機決定地震或雜訊
+            const isQuake = Math.random() > 0.5;
+            
+            // 生成數據
+            codeLog.innerHTML = `<span style="color:#aaa">// Initializing Data Generator...</span><br>`;
+            codeLog.innerHTML += `> Generating Gaussian Noise... Done.<br>`;
+            
+            const data = [];
+            for(let i=0; i<100; i++) {
+                let amp = gaussianNoise() * 0.1; // 雜訊
+                if(isQuake && i > 30) {
+                    let t = i - 30;
+                    // Ricker-like 數學公式模擬
+                    amp += Math.sin(0.5 * t) * Math.exp(-0.05 * t) * 1.5; 
+                }
+                // 正規化 clip
+                if(amp > 1) amp = 1; if(amp < -1) amp = -1;
+                data.push(amp);
+            }
+
+            codeLog.innerHTML += `> Injecting Signal: ${isQuake ? 'True' : 'False'}<br>`;
+            codeLog.innerHTML += `> Normalizing Waveform [-1, 1]... Done.<br>`;
+            codeLog.innerHTML += `> Sending to 1D CNN Model...<br>`;
+
+            // 更新圖表
+            pythonChart.data.datasets[0].data = data;
+            pythonChart.data.datasets[0].borderColor = isQuake ? '#0aff0a' : '#ff2a2a'; // 綠色是有訊號，紅色雜訊
+            pythonChart.update();
+
+            // 模擬預測
+            setTimeout(() => {
+                const prob = isQuake ? (0.9 + Math.random()*0.09) : (0.05 + Math.random()*0.1);
+                const label = prob > 0.5 ? "EARTHQUAKE" : "NOISE";
+                const color = label === "EARTHQUAKE" ? "#0aff0a" : "#ff2a2a";
+                
+                codeLog.innerHTML += `<span style="color:${color}">> Prediction: ${label} (Conf: ${(prob*100).toFixed(2)}%)</span><br>`;
+                codeLog.scrollTop = codeLog.scrollHeight;
+                
+                aiResult.innerText = label;
+                aiResult.style.color = color;
+            }, 500);
+        });
+
+
+        // -----------------------------------------
+        // PART 2: 戰情室實戰模擬 (Leaflet + 波形連動)
+        // -----------------------------------------
+        
+        // 1. 初始化地圖
+        const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([24.2, 121.6], 9);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 12, opacity: 0.9 }).addTo(map);
+
+        // 2. 測站資料
+        const stations = [
+            { id: 0, code: "HUAL", lat: 23.98, lon: 121.60, dist: 25 },
+            { id: 1, code: "NACB", lat: 24.45, lon: 121.75, dist: 68 },
+            { id: 2, code: "SSLB", lat: 23.90, lon: 120.95, dist: 85 }
+        ];
+
+        const stMarkers = [];
+        stations.forEach(st => {
+            const icon = L.divIcon({
+                className: 'station-icon', html: '▲', iconSize: [20, 20], iconAnchor: [10, 10]
+            });
+            stMarkers.push(L.marker([st.lat, st.lon], {icon: icon}).addTo(map));
+        });
+
+        // 3. 初始化波形圖 (3個)
+        const waveCharts = [];
+        for(let i=0; i<3; i++) {
+            const ctx = document.getElementById(`chart-${i}`).getContext('2d');
+            waveCharts[i] = new Chart(ctx, {
+                type: 'line',
+                data: { labels: Array(150).fill(''), datasets: [{ data: Array(150).fill(0), borderColor: '#333', borderWidth: 1, pointRadius: 0 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, animation: false,
+                    scales: { x: {display:false}, y: {display:false, min:-2, max:2} },
+                    plugins: { legend: {display: false} }
+                }
+            });
+        }
+
+        // 4. 動畫邏輯
+        let isSimulating = false;
+        const btnTrigger = document.getElementById('btn-trigger');
+        const sysStatus = document.getElementById('sys-status');
+        const hudResult = document.getElementById('hud-result');
+
+        // 地圖圖層物件
+        let pCircle, sCircle, epiMarker, links = [];
+
+        btnTrigger.addEventListener('click', () => {
+            if(isSimulating) return;
+            isSimulating = true;
+            btnTrigger.disabled = true;
+
+            // UI 重置
+            sysStatus.innerText = "DETECTING SEISMIC EVENT...";
+            sysStatus.classList.add('alert');
+            hudResult.style.display = 'none';
+            stMarkers.forEach(m => m.getElement().classList.remove('triggered'));
+            document.querySelectorAll('.st-badge').forEach(b => b.classList.remove('active'));
+            
+            // 清除舊圖層
+            if(pCircle) map.removeLayer(pCircle);
+            if(sCircle) map.removeLayer(sCircle);
+            if(epiMarker) map.removeLayer(epiMarker);
+            links.forEach(l => map.removeLayer(l));
+            links = [];
+            
+            // 重置圖表
+            waveCharts.forEach(c => {
+                c.data.datasets[0].data = Array(150).fill(0);
+                c.data.datasets[0].borderColor = '#333';
+                c.update();
+            });
+
+            // 設定震央
+            const epiLat = 24.15, epiLon = 121.90;
+            const starIcon = L.divIcon({ className: 'quake-star', html: '★', iconSize:[40,40], iconAnchor:[20,20] });
+            epiMarker = L.marker([epiLat, epiLon], {icon: starIcon}).addTo(map);
+
+            // 初始化波前圓圈
+            pCircle = L.circle([epiLat, epiLon], {radius:0, color:'#00f3ff', fillOpacity:0.05, weight: 1}).addTo(map);
+            sCircle = L.circle([epiLat, epiLon], {radius:0, color:'#ff2a2a', fillOpacity:0.05, weight: 1}).addTo(map);
+
+            // 開始迴圈
+            let time = 0;
+            const simSpeed = 0.5; // 控制整體速度
+            const pSpeed = 6.0 * 5, sSpeed = 3.5 * 5; // km per sec unit
+            
+            const timer = setInterval(() => {
+                time += simSpeed;
+                const pRad = time * pSpeed;
+                const sRad = time * sSpeed;
+
+                pCircle.setRadius(pRad * 1000); // meters
+                sCircle.setRadius(sRad * 1000);
+
+                // 檢查碰撞
+                stations.forEach((st, idx) => {
+                    if(!st.triggered && pRad >= st.dist) {
+                        st.triggered = true;
+                        activateStation(idx, st.lat, st.lon, epiLat, epiLon);
+                    }
+                });
+
+                // 結束條件
+                if(time > 30) {
+                    clearInterval(timer);
+                    finishSimulation();
+                }
+
+            }, 30);
+
+            // 重置標記
+            stations.forEach(st => st.triggered = false);
+        });
+
+        function activateStation(idx, stLat, stLon, epiLat, epiLon) {
+            // 1. 地圖標記變亮
+            stMarkers[idx].getElement().classList.add('triggered');
+            document.getElementById(`badge-${idx}`).classList.add('active');
+
+            // 2. 畫出連線 (Association)
+            const line = L.polyline([[stLat, stLon], [epiLat, epiLon]], { color: '#ff2a2a', dashArray: '5,5', weight: 1 }).addTo(map);
+            links.push(line);
+
+            // 3. 波形圖開始跑動 (Picking)
+            const chart = waveCharts[idx];
+            chart.data.datasets[0].borderColor = '#0aff0a'; // 變綠
+
+            // 生成一段模擬波形
+            const waveData = [];
+            for(let i=0; i<150; i++) {
+                let val = (Math.random()-0.5) * 0.1;
+                if(i > 30) { // 模擬到時
+                    val += Math.sin((i-30)*0.5) * Math.exp(-(i-30)*0.05) * 1.5;
+                }
+                waveData.push(val);
+            }
+
+            // 動畫顯示波形
+            let k = 0;
+            const waveTimer = setInterval(() => {
+                if(k >= 150) clearInterval(waveTimer);
+                chart.data.datasets[0].data[k] = waveData[k];
+                chart.update('none'); // 高效更新
+                k+=2;
+            }, 10);
+        }
+
+        function finishSimulation() {
+            isSimulating = false;
+            btnTrigger.disabled = false;
+            sysStatus.innerText = "EVENT LOCALIZED & CONFIRMED";
+            sysStatus.classList.remove('alert');
+            hudResult.style.display = 'block';
+        }
+
+    </script>
 </body>
 </html>
